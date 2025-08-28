@@ -36,7 +36,7 @@ Pulumi offers this repository as a [GitHub template repository](https://docs.git
 1. Set the following options:
    * Owner: pulumi 
    * Repository name: pulumi-provider-boilerplate (replace "provider-boilerplate" with the name of your provider)
-   * Description: Pulumi provider for xyz
+   * Description: Pulumi provider for netcup
    * Repository type: Public
 1. Clone the generated repository.
 
@@ -52,7 +52,7 @@ From the templated repository:
    - rename folders in `provider/cmd` to `pulumi-resource-{NAME}`
    - replace dependencies in `provider/go.mod` to reflect your repository name
    - find and replace all instances of `provider-boilerplate` with the `NAME` of your provider.
-   - find and replace all instances of the boilerplate `abc` with the `ORG` of your provider.
+   - find and replace all instances of the boilerplate `BlackDark` with the `ORG` of your provider.
    - replace all instances of the `github.com/pulumi/pulumi-provider-boilerplate` repository with the `REPOSITORY` location
 
 #### Build the provider and install the plugin

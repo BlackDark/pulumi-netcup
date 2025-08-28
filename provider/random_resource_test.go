@@ -30,14 +30,14 @@ func TestRandomResource(t *testing.T) {
 	t.Parallel()
 
 	server, err := integration.NewServer(t.Context(),
-		"xyz",
+		"netcup",
 		semver.Version{Minor: 1},
 		integration.WithProvider(Provider()),
 	)
 	require.NoError(t, err)
 
 	integration.LifeCycleTest{
-		Resource: "xyz:index:Random",
+		Resource: "netcup:index:Random",
 		Create: integration.Operation{
 			Inputs: presource.FromResourcePropertyMap(presource.NewPropertyMapFromMap(map[string]interface{}{
 				"length": 24,
