@@ -1,13 +1,13 @@
-name: provider-boilerplate
+name: netcup
 runtime: yaml
 
 resources:
   myRandomResource:
-    type: provider-boilerplate:Random
+    type: netcup:Random
     properties:
       length: 24
   myRandomComponent:
-    type: provider-boilerplate:RandomComponent
+    type: netcup:RandomComponent
     properties:
       length: 24
 

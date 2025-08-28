@@ -35,7 +35,7 @@ func Provider() p.Provider {
 		WithDisplayName("pulumi-netcup").
 		WithDescription("An example built with pulumi-go-provider.").
 		WithHomepage("https://www.pulumi.com").
-		WithNamespace("pulumi").
+		WithNamespace("BlackDark").
 		WithResources(infer.Resource(Random{})).
 		WithComponents(infer.ComponentF(NewRandomComponent)).
 		WithConfig(infer.Config(&Config{})).

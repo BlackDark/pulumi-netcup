@@ -1,10 +1,11 @@
-PROJECT_NAME := Pulumi Provider Boilerplate
+PROJECT_NAME := Pulumi Provider Netcup
 
-PACK             := provider-boilerplate
+NAME			 := BlackDark
+PACK             := netcup
 PACKDIR          := sdk
 PROJECT          := github.com/BlackDark/pulumi-netcup
-NODE_MODULE_NAME := @pulumi/boilerplate
-NUGET_PKG_NAME   := Pulumi.Boilerplate
+NODE_MODULE_NAME := @BlackDark/pulumi-netcup
+NUGET_PKG_NAME   := BlackDark.PulumiNetcup
 
 PROVIDER        := pulumi-resource-${PACK}
 PROVIDER_PATH   := provider
@@ -89,7 +90,7 @@ sdk/go: ${SCHEMA_FILE}
 	$(PULUMI) package gen-sdk --language go ${SCHEMA_FILE} --version "${VERSION_GENERIC}"
 	cp go.mod ${PACKDIR}/go/pulumi-${PACK}/go.mod
 	cd ${PACKDIR}/go/pulumi-${PACK} && \
-		go mod edit -module=github.com/pulumi/pulumi-${PACK}/${PACKDIR}/go/pulumi-${PACK} && \
+		go mod edit -module=github.com/BlackDark/pulumi-${PACK}/${PACKDIR}/go/pulumi-${PACK} && \
 		go mod tidy
 
 .PHONY: provider

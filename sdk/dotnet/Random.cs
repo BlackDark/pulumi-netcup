@@ -7,9 +7,9 @@ using System.Collections.Immutable;
 using System.Threading.Tasks;
 using Pulumi.Serialization;
 
-namespace Pulumi.ProviderBoilerplate
+namespace Pulumi.ProviderNetcup
 {
-    [ProviderBoilerplateResourceType("provider-boilerplate:index:Random")]
+    [ProviderNetcupResourceType("provider-netcup:index:Random")]
     public partial class Random : global::Pulumi.CustomResource
     {
         [Output("length")]
@@ -27,12 +27,12 @@ namespace Pulumi.ProviderBoilerplate
         /// <param name="args">The arguments used to populate this resource's properties</param>
         /// <param name="options">A bag of options that control this resource's behavior</param>
         public Random(string name, RandomArgs args, CustomResourceOptions? options = null)
-            : base("provider-boilerplate:index:Random", name, args ?? new RandomArgs(), MakeResourceOptions(options, ""))
+            : base("provider-netcup:index:Random", name, args ?? new RandomArgs(), MakeResourceOptions(options, ""))
         {
         }
 
         private Random(string name, Input<string> id, CustomResourceOptions? options = null)
-            : base("provider-boilerplate:index:Random", name, null, MakeResourceOptions(options, id))
+            : base("provider-netcup:index:Random", name, null, MakeResourceOptions(options, id))
         {
         }
 

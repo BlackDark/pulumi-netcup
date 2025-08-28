@@ -6,7 +6,7 @@ on:
     tags:
     - v*.*.*-**
 env:
-  PROVIDER: provider-boilerplate
+  PROVIDER: netcup
   PULUMI_LOCAL_NUGET: ${{ github.workspace }}/nuget
   TRAVIS_OS_NAME: linux
   PULUMI_GO_DEP_ROOT: ${{ github.workspace }}/..

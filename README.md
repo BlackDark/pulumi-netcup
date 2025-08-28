@@ -4,7 +4,7 @@ This repository is a boilerplate showing how to create and locally test a native
 
 ## Authoring a Pulumi Native Provider
 
-This boilerplate creates a working Pulumi-owned provider named `provider-boilerplate`.
+This boilerplate creates a working Pulumi-owned provider named `netcup`.
 It implements a random number generator that you can [build and test out for yourself](#test-against-the-example) and then replace the Random code with code specific to your provider.
 
 
@@ -35,7 +35,7 @@ Pulumi offers this repository as a [GitHub template repository](https://docs.git
 1. Click "Use this template".
 1. Set the following options:
    * Owner: pulumi 
-   * Repository name: pulumi-netcup (replace "provider-boilerplate" with the name of your provider)
+   * Repository name: pulumi-netcup (replace "netcup" with the name of your provider)
    * Description: Pulumi provider for netcup
    * Repository type: Public
 1. Clone the generated repository.
@@ -51,7 +51,7 @@ From the templated repository:
    This will do the following:
    - rename folders in `provider/cmd` to `pulumi-resource-{NAME}`
    - replace dependencies in `provider/go.mod` to reflect your repository name
-   - find and replace all instances of `provider-boilerplate` with the `NAME` of your provider.
+   - find and replace all instances of `netcup` with the `NAME` of your provider.
    - find and replace all instances of the boilerplate `BlackDark` with the `ORG` of your provider.
    - replace all instances of the `github.com/BlackDark/pulumi-netcup` repository with the `REPOSITORY` location
 
@@ -72,7 +72,7 @@ This will:
    
 ```bash
 $ cd examples/simple
-$ yarn link @pulumi/provider-boilerplate
+$ yarn link @pulumi/netcup
 $ yarn install
 $ pulumi stack init test
 $ pulumi up

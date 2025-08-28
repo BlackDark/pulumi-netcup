@@ -4,7 +4,7 @@
 package config
 
 import (
-	"github.com/BlackDark/pulumi-netcup/sdk/go/pulumi-netcup/internal"
+	"github.com/pulumi/pulumi-netcup/sdk/go/pulumi-netcup/internal"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi/config"
 )
@@ -12,5 +12,5 @@ import (
 var _ = internal.GetEnvOrDefault
 
 func GetItsasecret(ctx *pulumi.Context) bool {
-	return config.GetBool(ctx, "provider-boilerplate:itsasecret")
+	return config.GetBool(ctx, "provider-netcup:itsasecret")
 }

@@ -1,5 +1,5 @@
 template: native
-provider: provider-boilerplate
+provider: netcup
 major-version: 0
 providerDefaultBranch: main
 publishRegistry: false

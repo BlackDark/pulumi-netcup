@@ -1,5 +1,5 @@
 {
-  "name": "provider-boilerplate",
+  "name": "provider-netcup",
   "displayName": "pulumi-netcup",
   "description": "An example built with pulumi-go-provider.",
   "homepage": "https://www.pulumi.com",
@@ -13,7 +13,7 @@
     },
     "go": {
       "generateResourceContainerTypes": true,
-      "importBasePath": "github.com/BlackDark/pulumi-netcup/sdk/go/pulumi-netcup",
+      "importBasePath": "github.com/pulumi/pulumi-netcup/sdk/go/pulumi-netcup",
       "respectSchemaVersion": true
     },
     "nodejs": {
@@ -42,7 +42,7 @@
     }
   },
   "resources": {
-    "provider-boilerplate:index:Random": {
+    "provider-netcup:index:Random": {
       "properties": {
         "length": {
           "type": "integer"
@@ -65,7 +65,7 @@
         "length"
       ]
     },
-    "provider-boilerplate:index:RandomComponent": {
+    "provider-netcup:index:RandomComponent": {
       "properties": {
         "length": {
           "type": "integer"

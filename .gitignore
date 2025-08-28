@@ -19,3 +19,4 @@ sdk/java/build.gradle
 sdk/python/venv
 
 .venv/
+.config/

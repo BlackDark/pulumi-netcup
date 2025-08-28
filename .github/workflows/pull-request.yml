@@ -4,7 +4,7 @@ name: pull-request
 on:
   pull_request_target: {}
 env:
-  PROVIDER: provider-boilerplate
+  PROVIDER: netcup
   PULUMI_LOCAL_NUGET: ${{ github.workspace }}/nuget
   NUGET_PUBLISH_KEY: ${{ secrets.NUGET_PUBLISH_KEY }}
   TRAVIS_OS_NAME: linux

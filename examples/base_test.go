@@ -8,5 +8,5 @@ import (
 )
 
 var providerFactory = func(_ providers.PulumiTest) (pulumirpc.ResourceProviderServer, error) {
-	return goprovider.RawServer("provider-boilerplate", "1.0.0", provider.Provider())(nil)
+	return goprovider.RawServer("netcup", "1.0.0", provider.Provider())(nil)
 }
