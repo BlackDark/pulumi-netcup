@@ -1,4 +1,4 @@
-module github.com/pulumi/pulumi-provider-boilerplate
+module github.com/BlackDark/pulumi-netcup
 
 go 1.24
 

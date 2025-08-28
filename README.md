@@ -35,7 +35,7 @@ Pulumi offers this repository as a [GitHub template repository](https://docs.git
 1. Click "Use this template".
 1. Set the following options:
    * Owner: pulumi 
-   * Repository name: pulumi-provider-boilerplate (replace "provider-boilerplate" with the name of your provider)
+   * Repository name: pulumi-netcup (replace "provider-boilerplate" with the name of your provider)
    * Description: Pulumi provider for netcup
    * Repository type: Public
 1. Clone the generated repository.
@@ -53,7 +53,7 @@ From the templated repository:
    - replace dependencies in `provider/go.mod` to reflect your repository name
    - find and replace all instances of `provider-boilerplate` with the `NAME` of your provider.
    - find and replace all instances of the boilerplate `BlackDark` with the `ORG` of your provider.
-   - replace all instances of the `github.com/pulumi/pulumi-provider-boilerplate` repository with the `REPOSITORY` location
+   - replace all instances of the `github.com/BlackDark/pulumi-netcup` repository with the `REPOSITORY` location
 
 #### Build the provider and install the plugin
 
@@ -85,7 +85,7 @@ Now that you have completed all of the above steps, you have a working provider 
 You now have:
 
 1. A `provider/` folder containing the building and implementation logic.
-    1. `cmd/pulumi-resource-provider-boilerplate/main.go` - holds the provider's sample implementation logic.
+    1. `cmd/pulumi-resource-netcup/main.go` - holds the provider's sample implementation logic.
 2. `Makefile` - targets to help with building and publishing the provider. Run `make ci-mgmt` to regenerate CI workflows.
 3. `sdk` - holds the generated code libraries created by `pulumi gen-sdk`.
 4. `examples` a folder of Pulumi programs to try locally and/or use in CI.

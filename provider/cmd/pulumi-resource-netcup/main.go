@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"os"
 
-	netcup "github.com/pulumi/pulumi-provider-boilerplate/provider"
+	netcup "github.com/BlackDark/pulumi-netcup/provider"
 )
 
 // Serve the provider against Pulumi's Provider protocol.

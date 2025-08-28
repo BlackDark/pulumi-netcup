@@ -678,8 +678,8 @@ jobs:
       with:
         repository: ${{ github.repository }}
         base-ref: ${{ github.sha }}
-        source: sdk/go/pulumi-provider-boilerplate
-        path: sdk/go/pulumi-provider-boilerplate
+        source: sdk/go/pulumi-netcup
+        path: sdk/go/pulumi-netcup
         version: ${{ steps.version.outputs.version }}
         additive: false
         files: "**"

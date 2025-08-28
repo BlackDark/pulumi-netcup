@@ -27,12 +27,12 @@ import (
 var Version string
 
 // Name controls how this provider is referenced in package names and elsewhere.
-const Name string = "provider-boilerplate"
+const Name string = "provider-netcup"
 
 // Provider creates a new instance of the provider.
 func Provider() p.Provider {
 	p, err := infer.NewProviderBuilder().
-		WithDisplayName("pulumi-provider-boilerplate").
+		WithDisplayName("pulumi-netcup").
 		WithDescription("An example built with pulumi-go-provider.").
 		WithHomepage("https://www.pulumi.com").
 		WithNamespace("pulumi").

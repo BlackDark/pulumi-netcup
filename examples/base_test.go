@@ -3,7 +3,7 @@ package examples
 import (
 	"github.com/pulumi/providertest/providers"
 	goprovider "github.com/pulumi/pulumi-go-provider"
-	"github.com/pulumi/pulumi-provider-boilerplate/provider"
+	"github.com/BlackDark/pulumi-netcup/provider"
 	pulumirpc "github.com/pulumi/pulumi/sdk/v3/proto/go"
 )
 
