@@ -71,17 +71,14 @@ mxRecord, err := netcup.NewDnsRecord(ctx, "mail-record", &netcup.DnsRecordArgs{
     Name:     pulumi.String("@"),
     Type:     pulumi.String("MX"),
     Value:    pulumi.String("mail.example.com"),
-    Priority: pulumi.IntPtr(10),
+    Priority: pulumi.StringPtr("10"),
 })
 
-// Create an SRV record
+// Create an SRV record (uses combined format for priority, weight, port)
 srvRecord, err := netcup.NewDnsRecord(ctx, "sip-record", &netcup.DnsRecordArgs{
-    Domain:   pulumi.String("example.com"),
-    Name:     pulumi.String("_sip._tcp"),
-    Type:     pulumi.String("SRV"),
-    Value:    pulumi.String("sip.example.com"),
-    Priority: pulumi.IntPtr(10),
-    Weight:   pulumi.IntPtr(20),
-    Port:     pulumi.IntPtr(5060),
+    Domain: pulumi.String("example.com"),
+    Name:   pulumi.String("_sip._tcp"),
+    Type:   pulumi.String("SRV"),
+    Value:  pulumi.String("10 20 5060 sip.example.com"), // priority weight port target
 })
 ```

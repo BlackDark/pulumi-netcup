@@ -34,13 +34,8 @@ type DnsRecordArgs struct {
 	Type string `pulumi:"type"`
 	// Record value/destination
 	Value string `pulumi:"value"`
-	// Priority for MX/SRV records (optional)
-	Priority *int `pulumi:"priority,optional"`
-	// Additional parameters for complex record types (optional)
-	Port     *int    `pulumi:"port,optional"`
-	Weight   *int    `pulumi:"weight,optional"`
-	Protocol *string `pulumi:"protocol,optional"`
-	Service  *string `pulumi:"service,optional"`
+	// Priority for MX records (optional, as string to match API)
+	Priority *string `pulumi:"priority,optional"`
 }
 
 // DnsRecordState is what's persisted in state
@@ -81,7 +76,11 @@ func (r *DnsRecord) Create(
 	}
 
 	// Create DNS record via Netcup API
-	recordID, err := client.CreateDnsRecord(input.Domain, input.Name, input.Type, input.Value, input.Priority, input.Port, input.Weight, input.Protocol, input.Service)
+	var priority string
+	if input.Priority != nil {
+		priority = *input.Priority
+	}
+	recordID, err := client.CreateDnsRecord(input.Domain, input.Name, input.Type, input.Value, priority)
 	if err != nil {
 		return infer.CreateResponse[DnsRecordState]{}, fmt.Errorf("failed to create DNS record: %w", err)
 	}
@@ -126,12 +125,8 @@ func validateDnsRecord(args DnsRecordArgs) error {
 	// Validate required fields for specific record types
 	switch args.Type {
 	case "MX":
-		if args.Priority == nil {
+		if args.Priority == nil || *args.Priority == "" {
 			return fmt.Errorf("priority is required for MX records")
-		}
-	case "SRV":
-		if args.Priority == nil || args.Weight == nil || args.Port == nil {
-			return fmt.Errorf("priority, weight, and port are required for SRV records")
 		}
 	}
 
