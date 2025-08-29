@@ -62,9 +62,8 @@ func NewRandomComponent(
 
 	// We can access provider configuration too if needed.
 	config := infer.GetConfig[Config](ctx.Context())
-	if config.Scream != nil {
-		pArgs.Lower = pulumi.BoolPtr(*config.Scream)
-	}
+	// Note: Configuration now contains Netcup API credentials instead of Scream
+	_ = config // Suppress unused variable warning
 
 	// Create the sub-resource. Ensure that the sub-resource is parented to the component resource.
 	password, err := random.NewRandomPassword(ctx, name+"-password", pArgs, pulumi.Parent(comp))

@@ -1,11 +1,11 @@
-module github.com/BlackDark/pulumi-netcup/examples/go
+module github.com/blackdark/pulumi-netcup/examples/go
 
 go 1.24.2
 
-replace github.com/BlackDark/pulumi-netcup/sdk/go/pulumi-netcup => ../../sdk/go/pulumi-netcup
+replace github.com/blackdark/pulumi-netcup/sdk/go/pulumi-netcup => ../../sdk/go/pulumi-netcup
 
 require (
-	github.com/BlackDark/pulumi-netcup/sdk/go/pulumi-netcup v0.0.3
+	github.com/blackdark/pulumi-netcup/sdk/go/pulumi-netcup v0.0.3
 	github.com/pulumi/pulumi/sdk/v3 v3.175.0
 )
 

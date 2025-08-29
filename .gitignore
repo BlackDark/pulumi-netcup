@@ -20,3 +20,5 @@ sdk/python/venv
 
 .venv/
 .config/
+provider/cmd/**/schema.json
+sdk/

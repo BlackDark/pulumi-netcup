@@ -1,7 +1,7 @@
 package main
 
 import (
-	boilerplate "github.com/BlackDark/pulumi-netcup/sdk/go/pulumi-netcup"
+	boilerplate "github.com/blackdark/pulumi-netcup/sdk/go/pulumi-netcup"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 

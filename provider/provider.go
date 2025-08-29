@@ -33,10 +33,13 @@ const Name string = "provider-netcup"
 func Provider() p.Provider {
 	p, err := infer.NewProviderBuilder().
 		WithDisplayName("pulumi-netcup").
-		WithDescription("An example built with pulumi-go-provider.").
-		WithHomepage("https://www.pulumi.com").
-		WithNamespace("BlackDark").
-		WithResources(infer.Resource(Random{})).
+		WithDescription("A Pulumi provider for managing Netcup DNS records and resources.").
+		WithHomepage("https://github.com/blackdark/pulumi-netcup").
+		WithNamespace("blackdark").
+		WithResources(
+			infer.Resource(&DnsRecord{}),
+			infer.Resource(Random{}),
+		).
 		WithComponents(infer.ComponentF(NewRandomComponent)).
 		WithConfig(infer.Config(&Config{})).
 		WithModuleMap(map[tokens.ModuleName]tokens.ModuleName{
@@ -50,5 +53,8 @@ func Provider() p.Provider {
 
 // Config defines provider-level configuration
 type Config struct {
-	Scream *bool `pulumi:"itsasecret,optional"`
+	// Netcup API credentials
+	ApiKey       string `pulumi:"apiKey"`
+	ApiPassword  string `pulumi:"apiPassword,secret"`
+	CustomerID   string `pulumi:"customerId"`
 }

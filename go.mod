@@ -1,4 +1,4 @@
-module github.com/BlackDark/pulumi-netcup
+module github.com/blackdark/pulumi-netcup
 
 go 1.24
 

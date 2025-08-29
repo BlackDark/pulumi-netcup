@@ -3,7 +3,7 @@ provider: netcup
 major-version: 0
 providerDefaultBranch: main
 publishRegistry: false
-providerVersion: github.com/BlackDark/pulumi-netcup/provider.Version
+providerVersion: github.com/blackdark/pulumi-netcup/provider.Version
 parallel: 3
 sdkModuleDir: sdk/go/pulumi-netcup
 # For some reason this is required. If it's omitted all of the env keys get duplicated.

@@ -52,8 +52,8 @@ From the templated repository:
    - rename folders in `provider/cmd` to `pulumi-resource-{NAME}`
    - replace dependencies in `provider/go.mod` to reflect your repository name
    - find and replace all instances of `netcup` with the `NAME` of your provider.
-   - find and replace all instances of the boilerplate `BlackDark` with the `ORG` of your provider.
-   - replace all instances of the `github.com/BlackDark/pulumi-netcup` repository with the `REPOSITORY` location
+   - find and replace all instances of the boilerplate `blackdark` with the `ORG` of your provider.
+   - replace all instances of the `github.com/blackdark/pulumi-netcup` repository with the `REPOSITORY` location
 
 #### Build the provider and install the plugin
 

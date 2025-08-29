@@ -19,7 +19,7 @@ func TestGoExampleLifecycle(t *testing.T) {
 
 	module := filepath.Join(cwd, "../sdk/go/pulumi-netcup")
 	pt := pulumitest.NewPulumiTest(t, "go",
-		opttest.GoModReplacement("github.com/BlackDark/pulumi-netcup/sdk/go/pulumi-netcup", module),
+		opttest.GoModReplacement("github.com/blackdark/pulumi-netcup/sdk/go/pulumi-netcup", module),
 		opttest.AttachProviderServer("netcup", providerFactory),
 		opttest.SkipInstall(),
 	)
