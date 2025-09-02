@@ -177,7 +177,7 @@ jobs:
         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
   build_sdks:
     needs: prerequisites
-    runs-on: pulumi-ubuntu-8core
+    runs-on: ubuntu-latest #pulumi-ubuntu-8core
     strategy:
       fail-fast: ${{ ! contains(github.actor, 'renovate') }}
       matrix:
@@ -346,7 +346,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   test:
-    runs-on: pulumi-ubuntu-8core
+    runs-on: ubuntu-latest #pulumi-ubuntu-8core
     needs:
     - build_sdks
     strategy:
