@@ -63,8 +63,6 @@ type DnsRecordInfo struct {
 	Destination  string `json:"destination"`
 	DeleteRecord bool   `json:"deleterecord,omitempty"`
 	State        string `json:"state,omitempty"`
-	Name         string // Computed field
-	Value        string // Computed field
 }
 
 // LoginParams represents login parameters
@@ -188,10 +186,8 @@ func (c *NetcupClient) CreateDnsRecord(domain, name, recordType, value, priority
 
 	newRecord := &DnsRecordInfo{
 		Hostname:    name,
-		Name:        name,
 		Type:        recordType,
 		Destination: value,
-		Value:       value,
 	}
 
 	if priority != "" {
@@ -275,8 +271,6 @@ func (c *NetcupClient) UpdateDnsRecord(recordID, domain, name, recordType, value
 			record.Hostname = name
 			record.Type = recordType
 			record.Destination = value
-			record.Name = name
-			record.Value = value
 			if priority != "" {
 				record.Priority = priority
 			} else {
@@ -356,10 +350,8 @@ func (c *NetcupClient) GetDnsRecordById(recordID, domain string) (*DnsRecordInfo
 			record := &DnsRecordInfo{
 				ID:          id,
 				Hostname:    hostname,
-				Name:        hostname,
 				Type:        recordType,
 				Destination: destination,
-				Value:       destination,
 			}
 
 			if priority, ok := recordMap["priority"].(string); ok {
@@ -427,10 +419,8 @@ func (c *NetcupClient) getAllDnsRecords(sessionID, domain string) ([]*DnsRecordI
 		record := &DnsRecordInfo{
 			ID:          id,
 			Hostname:    hostname,
-			Name:        hostname,
 			Type:        recordType,
 			Destination: destination,
-			Value:       destination,
 		}
 
 		if priority, ok := recordMap["priority"].(string); ok {

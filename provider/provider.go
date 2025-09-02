@@ -57,3 +57,10 @@ type Config struct {
 	ApiPassword string `pulumi:"apiPassword" provider:"secret"`
 	CustomerID  string `pulumi:"customerId"`
 }
+
+// Annotate provides metadata about the Config
+func (c *Config) Annotate(a infer.Annotator) {
+	a.Describe(&c.ApiKey, "The Netcup API key for authentication")
+	a.Describe(&c.ApiPassword, "The Netcup API password for authentication")
+	a.Describe(&c.CustomerID, "The Netcup customer ID")
+}

@@ -315,8 +315,6 @@ func TestNetcupClient_UpdateRecordLogic(t *testing.T) {
 			record.Hostname = newName
 			record.Type = newType
 			record.Destination = newValue
-			record.Name = newName
-			record.Value = newValue
 			if newPriority != "" {
 				record.Priority = newPriority
 			} else {
