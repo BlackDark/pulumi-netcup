@@ -1,12 +1,12 @@
 import * as pulumi from "@pulumi/pulumi";
-import * as boilerplate from "@mynamespace/netcup";
+import * as netcup from "@blackdark/pulumi-netcup";
 
-const myRandomResource = new boilerplate.Random("myRandomResource", {
-  length: 24,
+const dnsRecord = new netcup.DnsRecord("example-dns-record", {
+  domain: "example.com",
+  name: "test",
+  type: "A",
+  value: "1.2.3.4",
 });
-const myRandomComponent = new boilerplate.RandomComponent("myRandomComponent", {
-  length: 24,
-});
-export const output = {
-  value: myRandomResource.result,
-};
+
+export const fqdn = dnsRecord.fqdn;
+export const recordId = dnsRecord.recordId;

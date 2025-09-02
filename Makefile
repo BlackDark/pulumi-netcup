@@ -9,7 +9,7 @@ NUGET_PKG_NAME   := blackdark.PulumiNetcup
 
 PROVIDER        := pulumi-resource-${PACK}
 PROVIDER_PATH   := provider
-VERSION_PATH    := ${PROVIDER_PATH}/version.Version
+VERSION_PATH    := ${PROVIDER_PATH}.Version
 
 PULUMI          := .pulumi/bin/pulumi
 
@@ -46,7 +46,7 @@ prepare:
 # Local & branch builds will just used this fixed default version unless specified
 PROVIDER_VERSION ?= 1.0.0-alpha.0+dev
 # Use this normalised version everywhere rather than the raw input to ensure consistency.
-VERSION_GENERIC = $(shell pulumictl convert-version --language generic --version "$(PROVIDER_VERSION)")
+VERSION_GENERIC = $(shell pulumictl convert-version --language generic --version "$(PROVIDER_VERSION)" 2>/dev/null || echo "$(PROVIDER_VERSION)")
 
 # Need to pick up locally pinned pulumi-langage-* plugins.
 export PULUMI_IGNORE_AMBIENT_PLUGINS = true
@@ -98,6 +98,9 @@ provider: bin/${PROVIDER} bin/pulumi-gen-${PACK} # Required by CI
 
 bin/${PROVIDER}:
 	cd provider && go build -o $(WORKING_DIR)/bin/${PROVIDER} -ldflags "-X ${PROJECT}/${VERSION_PATH}=${VERSION_GENERIC}" $(PROJECT)/${PROVIDER_PATH}/cmd/$(PROVIDER)
+
+bin/${PROVIDER}-mac:
+	cd provider && go build -o $(WORKING_DIR)/bin-mac/${PROVIDER} -ldflags "-X ${PROJECT}/${VERSION_PATH}=${VERSION_GENERIC}" $(PROJECT)/${PROVIDER_PATH}/cmd/$(PROVIDER)
 
 .PHONY: provider_debug
 provider_debug:

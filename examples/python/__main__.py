@@ -1,8 +1,12 @@
 import pulumi
-import provider_boilerplate as boilerplate
+import pulumi_netcup as netcup
 
-my_random_resource = boilerplate.Random("myRandomResource", length=24)
-my_random_component = boilerplate.RandomComponent("myRandomComponent", length=24)
-pulumi.export("output", {
-    "value": my_random_resource.result,
-})
+dns_record = netcup.DnsRecord("example-dns-record",
+    domain="example.com",
+    name="test",
+    type="A",
+    value="1.2.3.4"
+)
+
+pulumi.export("fqdn", dns_record.fqdn)
+pulumi.export("recordId", dns_record.record_id)

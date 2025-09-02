@@ -2,6 +2,10 @@
 
 This repository is a boilerplate showing how to create and locally test a native Pulumi provider (with examples of both CustomResource and ComponentResource [resource types](https://www.pulumi.com/docs/iac/concepts/resources/)). 
 
+## Links
+
+- https://ccp.netcup.net/run/webservice/servers/endpoint.php#updateDnsRecords
+
 ## Authoring a Pulumi Native Provider
 
 This boilerplate creates a working Pulumi-owned provider named `netcup`.

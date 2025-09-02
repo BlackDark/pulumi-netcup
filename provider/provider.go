@@ -27,7 +27,7 @@ import (
 var Version string
 
 // Name controls how this provider is referenced in package names and elsewhere.
-const Name string = "provider-netcup"
+const Name string = "netcup"
 
 // Provider creates a new instance of the provider.
 func Provider() p.Provider {
@@ -35,12 +35,11 @@ func Provider() p.Provider {
 		WithDisplayName("pulumi-netcup").
 		WithDescription("A Pulumi provider for managing Netcup DNS records and resources.").
 		WithHomepage("https://github.com/blackdark/pulumi-netcup").
-		WithNamespace("blackdark").
+		WithNamespace("netcup").
+		WithGoImportPath("github.com/blackdark/pulumi-netcup/sdk/go/pulumi-netcup").
 		WithResources(
 			infer.Resource(&DnsRecord{}),
-			infer.Resource(Random{}),
 		).
-		WithComponents(infer.ComponentF(NewRandomComponent)).
 		WithConfig(infer.Config(&Config{})).
 		WithModuleMap(map[tokens.ModuleName]tokens.ModuleName{
 			"provider": "index",
@@ -54,7 +53,7 @@ func Provider() p.Provider {
 // Config defines provider-level configuration
 type Config struct {
 	// Netcup API credentials
-	ApiKey       string `pulumi:"apiKey"`
-	ApiPassword  string `pulumi:"apiPassword" provider:"secret"`
-	CustomerID   string `pulumi:"customerId"`
+	ApiKey      string `pulumi:"apiKey"`
+	ApiPassword string `pulumi:"apiPassword" provider:"secret"`
+	CustomerID  string `pulumi:"customerId"`
 }

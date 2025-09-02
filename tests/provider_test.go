@@ -18,41 +18,43 @@ import (
 	"context"
 	"testing"
 
+	netcup "github.com/blackdark/pulumi-netcup/provider"
 	"github.com/blang/semver"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	p "github.com/pulumi/pulumi-go-provider"
 	"github.com/pulumi/pulumi-go-provider/integration"
-	netcup "github.com/blackdark/pulumi-netcup/provider"
 	"github.com/pulumi/pulumi/sdk/v3/go/common/resource"
 	"github.com/pulumi/pulumi/sdk/v3/go/common/tokens"
 	"github.com/pulumi/pulumi/sdk/v3/go/property"
 )
 
-func TestRandomCreate(t *testing.T) {
+func TestDnsRecordCreateDryRun(t *testing.T) {
 	t.Parallel()
 
 	prov := provider(t)
 
 	response, err := prov.Create(p.CreateRequest{
-		Urn: urn("Random"),
+		Urn: urn("DnsRecord"),
 		Properties: property.NewMap(map[string]property.Value{
-			"length": property.New(12.0),
+			"domain": property.New("example.com"),
+			"name":   property.New("test"),
+			"type":   property.New("A"),
+			"value":  property.New("1.2.3.4"),
 		}),
-
-		DryRun: false,
+		DryRun: true,
 	})
 
 	require.NoError(t, err)
-	result := response.Properties.Get("result").AsString()
-	assert.Len(t, result, 12)
+	assert.True(t, response.Properties.Get("recordId").IsComputed())
+	assert.True(t, response.Properties.Get("fqdn").IsComputed())
 }
 
 // urn is a helper function to build an urn for running integration tests.
 func urn(typ string) resource.URN {
 	return resource.NewURN("stack", "proj", "",
-		tokens.Type("test:index:"+typ), "name")
+		tokens.Type("netcup:index:"+typ), "name")
 }
 
 // Create a test server.

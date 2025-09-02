@@ -74,21 +74,6 @@ type LoginParams struct {
 	APIPassword    string `json:"apipassword"`
 }
 
-// DnsRecordParams represents parameters for DNS record operations
-type DnsRecordParams struct {
-	DomainName string           `json:"domainname"`
-	DNSRecords []*DnsRecordInfo `json:"dnsrecords,omitempty"`
-}
-
-// AuthenticatedRequest represents requests that need authentication
-type AuthenticatedRequest struct {
-	CustomerNumber string `json:"customernumber"`
-	APIKey         string `json:"apikey"`
-	SessionID      string `json:"apisessionid"`
-	DomainName     string `json:"domainname"`
-	DNSRecords     []*DnsRecordInfo `json:"dnsrecords,omitempty"`
-}
-
 // NewNetcupClient creates a new Netcup API client
 func NewNetcupClient(apiKey, apiPassword, customerID string) *NetcupClient {
 	return &NetcupClient{
@@ -101,7 +86,6 @@ func NewNetcupClient(apiKey, apiPassword, customerID string) *NetcupClient {
 	}
 }
 
-// login authenticates with the Netcup API and returns a session ID
 func (c *NetcupClient) login() (string, error) {
 	params := LoginParams{
 		CustomerNumber: c.customerID,
@@ -120,23 +104,31 @@ func (c *NetcupClient) login() (string, error) {
 	}
 
 	if response.Status != "success" {
-		return "", fmt.Errorf("login failed: %s", response.LongMessage)
+		switch {
+		case response.StatusCode == 2011:
+			return "", fmt.Errorf("login failed: Invalid API credentials (API key or password incorrect)")
+		case response.StatusCode == 2029:
+			return "", fmt.Errorf("login failed: Customer account not found (check customer ID)")
+		case response.StatusCode == 2057:
+			return "", fmt.Errorf("login failed: Rate limit exceeded (more than 180 requests per minute). Please wait and retry later")
+		default:
+			return "", fmt.Errorf("login failed: %s (status code: %d)", response.LongMessage, response.StatusCode)
+		}
 	}
 
 	sessionData, ok := response.ResponseData.(map[string]interface{})
 	if !ok {
-		return "", fmt.Errorf("invalid login response format")
+		return "", fmt.Errorf("login failed: invalid response format")
 	}
 
 	sessionID, ok := sessionData["apisessionid"].(string)
 	if !ok {
-		return "", fmt.Errorf("no session ID returned")
+		return "", fmt.Errorf("login failed: no session ID returned in response")
 	}
 
 	return sessionID, nil
 }
 
-// logout ends the API session
 func (c *NetcupClient) logout(sessionID string) error {
 	logoutParams := struct {
 		CustomerNumber string `json:"customernumber"`
@@ -157,7 +149,6 @@ func (c *NetcupClient) logout(sessionID string) error {
 	return err
 }
 
-// makeAPICall performs an HTTP request to the Netcup API
 func (c *NetcupClient) makeAPICall(request NetcupAPIRequest) (*NetcupAPIResponse, error) {
 	jsonData, err := json.Marshal(request)
 	if err != nil {
@@ -183,7 +174,6 @@ func (c *NetcupClient) makeAPICall(request NetcupAPIRequest) (*NetcupAPIResponse
 	return &apiResponse, nil
 }
 
-// CreateDnsRecord creates a new DNS record
 func (c *NetcupClient) CreateDnsRecord(domain, name, recordType, value, priority string) (string, error) {
 	sessionID, err := c.login()
 	if err != nil {
@@ -191,75 +181,49 @@ func (c *NetcupClient) CreateDnsRecord(domain, name, recordType, value, priority
 	}
 	defer c.logout(sessionID)
 
-	// Create new record (Netcup requires updating the complete record set)
+	existingRecords, err := c.getAllDnsRecords(sessionID, domain)
+	if err != nil {
+		return "", fmt.Errorf("failed to get existing DNS records: %w", err)
+	}
+
 	newRecord := &DnsRecordInfo{
 		Hostname:    name,
+		Name:        name,
 		Type:        recordType,
 		Destination: value,
+		Value:       value,
 	}
 
 	if priority != "" {
 		newRecord.Priority = priority
 	}
 
-	params := AuthenticatedRequest{
-		CustomerNumber: c.customerID,
-		APIKey:         c.apiKey,
-		SessionID:      sessionID,
-		DomainName:     domain,
-		DNSRecords:     []*DnsRecordInfo{newRecord},
-	}
+	allRecords := append(existingRecords, newRecord)
 
-	request := NetcupAPIRequest{
-		Action: "updateDnsRecords",
-		Param:  params,
-	}
-
-	response, err := c.makeAPICall(request)
+	err = c.updateAllDnsRecords(sessionID, domain, allRecords)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to create DNS record: %w", err)
 	}
 
-	if response.Status != "success" {
-		return "", fmt.Errorf("create DNS record failed: %s", response.LongMessage)
+	updatedRecords, err := c.getAllDnsRecords(sessionID, domain)
+	if err != nil {
+		return "", fmt.Errorf("failed to get updated DNS records to find new record ID: %w", err)
 	}
 
-	// Parse response to get the actual record ID
-	responseData, ok := response.ResponseData.(map[string]interface{})
-	if !ok {
-		return "", fmt.Errorf("invalid create response format")
-	}
-
-	recordsData, ok := responseData["dnsrecords"].([]interface{})
-	if !ok {
-		return "", fmt.Errorf("no DNS records found in create response")
-	}
-
-	// Find our created record by matching hostname, type, and destination
-	for _, recordData := range recordsData {
-		recordMap, ok := recordData.(map[string]interface{})
-		if !ok {
-			continue
+	for _, record := range updatedRecords {
+		match := record.Hostname == name && record.Type == recordType && record.Destination == value
+		if recordType == "MX" && priority != "" {
+			match = match && record.Priority == priority
 		}
 
-		hostname, hostnameOk := recordMap["hostname"].(string)
-		recType, typeOk := recordMap["type"].(string)
-		destination, destOk := recordMap["destination"].(string)
-		
-		if hostnameOk && typeOk && destOk {
-			if hostname == name && recType == recordType && destination == value {
-				if id, ok := recordMap["id"].(string); ok {
-					return id, nil
-				}
-			}
+		if match && record.ID != "" {
+			return record.ID, nil
 		}
 	}
 
-	return "", fmt.Errorf("could not retrieve created record ID")
+	return "", fmt.Errorf("DNS record was created successfully but no record ID was found. This may indicate an API issue")
 }
 
-
-// DeleteDnsRecord removes a DNS record
 func (c *NetcupClient) DeleteDnsRecord(recordID, domain string) error {
 	sessionID, err := c.login()
 	if err != nil {
@@ -267,41 +231,74 @@ func (c *NetcupClient) DeleteDnsRecord(recordID, domain string) error {
 	}
 	defer c.logout(sessionID)
 
-	// Get the record to delete
-	record, err := c.GetDnsRecordById(recordID, domain)
+	existingRecords, err := c.getAllDnsRecords(sessionID, domain)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to get existing DNS records: %w", err)
 	}
 
-	// Mark record for deletion
-	record.DeleteRecord = true
-
-	params := AuthenticatedRequest{
-		CustomerNumber: c.customerID,
-		APIKey:         c.apiKey,
-		SessionID:      sessionID,
-		DomainName:     domain,
-		DNSRecords:     []*DnsRecordInfo{record},
+	found := false
+	for _, record := range existingRecords {
+		if record.ID == recordID {
+			record.DeleteRecord = true
+			found = true
+			break
+		}
 	}
 
-	request := NetcupAPIRequest{
-		Action: "updateDnsRecords",
-		Param:  params,
+	if !found {
+		return nil
 	}
 
-	response, err := c.makeAPICall(request)
+	err = c.updateAllDnsRecords(sessionID, domain, existingRecords)
 	if err != nil {
-		return err
-	}
-
-	if response.Status != "success" {
-		return fmt.Errorf("delete DNS record failed: %s", response.LongMessage)
+		return fmt.Errorf("failed to delete DNS record: %w", err)
 	}
 
 	return nil
 }
 
-// GetDnsRecordById retrieves information about a specific DNS record by ID
+func (c *NetcupClient) UpdateDnsRecord(recordID, domain, name, recordType, value, priority string) error {
+	sessionID, err := c.login()
+	if err != nil {
+		return err
+	}
+	defer c.logout(sessionID)
+
+	existingRecords, err := c.getAllDnsRecords(sessionID, domain)
+	if err != nil {
+		return fmt.Errorf("failed to get existing DNS records: %w", err)
+	}
+
+	found := false
+	for _, record := range existingRecords {
+		if record.ID == recordID {
+			record.Hostname = name
+			record.Type = recordType
+			record.Destination = value
+			record.Name = name
+			record.Value = value
+			if priority != "" {
+				record.Priority = priority
+			} else {
+				record.Priority = ""
+			}
+			found = true
+			break
+		}
+	}
+
+	if !found {
+		return fmt.Errorf("DNS record not found: %s", recordID)
+	}
+
+	err = c.updateAllDnsRecords(sessionID, domain, existingRecords)
+	if err != nil {
+		return fmt.Errorf("failed to update DNS record: %w", err)
+	}
+
+	return nil
+}
+
 func (c *NetcupClient) GetDnsRecordById(recordID, domain string) (*DnsRecordInfo, error) {
 	sessionID, err := c.login()
 	if err != nil {
@@ -309,7 +306,12 @@ func (c *NetcupClient) GetDnsRecordById(recordID, domain string) (*DnsRecordInfo
 	}
 	defer c.logout(sessionID)
 
-	params := AuthenticatedRequest{
+	params := struct {
+		CustomerNumber string `json:"customernumber"`
+		APIKey         string `json:"apikey"`
+		SessionID      string `json:"apisessionid"`
+		DomainName     string `json:"domainname"`
+	}{
 		CustomerNumber: c.customerID,
 		APIKey:         c.apiKey,
 		SessionID:      sessionID,
@@ -327,7 +329,7 @@ func (c *NetcupClient) GetDnsRecordById(recordID, domain string) (*DnsRecordInfo
 	}
 
 	if response.Status != "success" {
-		return nil, fmt.Errorf("get DNS records failed: %s", response.LongMessage)
+		return nil, fmt.Errorf("get DNS records failed: %s (status code: %d)", response.LongMessage, response.StatusCode)
 	}
 
 	responseData, ok := response.ResponseData.(map[string]interface{})
@@ -337,28 +339,29 @@ func (c *NetcupClient) GetDnsRecordById(recordID, domain string) (*DnsRecordInfo
 
 	recordsData, ok := responseData["dnsrecords"].([]interface{})
 	if !ok {
-		return nil, fmt.Errorf("no DNS records found in response")
+		return nil, fmt.Errorf("no DNS records found in response (response structure: %+v)", responseData)
 	}
-
 	for _, recordData := range recordsData {
 		recordMap, ok := recordData.(map[string]interface{})
 		if !ok {
 			continue
 		}
 
-		if id, ok := recordMap["id"].(string); ok && id == recordID {
-			record := &DnsRecordInfo{ID: id}
-			if hostname, ok := recordMap["hostname"].(string); ok {
-				record.Hostname = hostname
-				record.Name = hostname
+		id, _ := recordMap["id"].(string)
+		if id == recordID {
+			hostname, _ := recordMap["hostname"].(string)
+			recordType, _ := recordMap["type"].(string)
+			destination, _ := recordMap["destination"].(string)
+
+			record := &DnsRecordInfo{
+				ID:          id,
+				Hostname:    hostname,
+				Name:        hostname,
+				Type:        recordType,
+				Destination: destination,
+				Value:       destination,
 			}
-			if recordType, ok := recordMap["type"].(string); ok {
-				record.Type = recordType
-			}
-			if destination, ok := recordMap["destination"].(string); ok {
-				record.Destination = destination
-				record.Value = destination
-			}
+
 			if priority, ok := recordMap["priority"].(string); ok {
 				record.Priority = priority
 			}
@@ -372,3 +375,120 @@ func (c *NetcupClient) GetDnsRecordById(recordID, domain string) (*DnsRecordInfo
 	return nil, fmt.Errorf("DNS record not found: %s", recordID)
 }
 
+func (c *NetcupClient) getAllDnsRecords(sessionID, domain string) ([]*DnsRecordInfo, error) {
+	params := struct {
+		CustomerNumber string `json:"customernumber"`
+		APIKey         string `json:"apikey"`
+		SessionID      string `json:"apisessionid"`
+		DomainName     string `json:"domainname"`
+	}{
+		CustomerNumber: c.customerID,
+		APIKey:         c.apiKey,
+		SessionID:      sessionID,
+		DomainName:     domain,
+	}
+
+	request := NetcupAPIRequest{
+		Action: "infoDnsRecords",
+		Param:  params,
+	}
+
+	response, err := c.makeAPICall(request)
+	if err != nil {
+		return nil, err
+	}
+
+	if response.Status != "success" {
+		return nil, fmt.Errorf("get DNS records failed: %s (status code: %d)", response.LongMessage, response.StatusCode)
+	}
+
+	responseData, ok := response.ResponseData.(map[string]interface{})
+	if !ok {
+		return nil, fmt.Errorf("invalid DNS records response format")
+	}
+
+	recordsData, ok := responseData["dnsrecords"].([]interface{})
+	if !ok {
+		return nil, fmt.Errorf("no DNS records found in response")
+	}
+
+	var records []*DnsRecordInfo
+	for _, recordData := range recordsData {
+		recordMap, ok := recordData.(map[string]interface{})
+		if !ok {
+			continue
+		}
+
+		id, _ := recordMap["id"].(string)
+		hostname, _ := recordMap["hostname"].(string)
+		recordType, _ := recordMap["type"].(string)
+		destination, _ := recordMap["destination"].(string)
+
+		record := &DnsRecordInfo{
+			ID:          id,
+			Hostname:    hostname,
+			Name:        hostname,
+			Type:        recordType,
+			Destination: destination,
+			Value:       destination,
+		}
+
+		if priority, ok := recordMap["priority"].(string); ok {
+			record.Priority = priority
+		}
+		if state, ok := recordMap["state"].(string); ok {
+			record.State = state
+		}
+
+		records = append(records, record)
+	}
+
+	return records, nil
+}
+
+func (c *NetcupClient) updateAllDnsRecords(sessionID, domain string, records []*DnsRecordInfo) error {
+	params := struct {
+		DomainName     string `json:"domainname"`
+		CustomerNumber string `json:"customernumber"`
+		APIKey         string `json:"apikey"`
+		SessionID      string `json:"apisessionid"`
+		DnsRecordSet   struct {
+			DnsRecords []*DnsRecordInfo `json:"dnsrecords"`
+		} `json:"dnsrecordset"`
+	}{
+		DomainName:     domain,
+		CustomerNumber: c.customerID,
+		APIKey:         c.apiKey,
+		SessionID:      sessionID,
+		DnsRecordSet: struct {
+			DnsRecords []*DnsRecordInfo `json:"dnsrecords"`
+		}{
+			DnsRecords: records,
+		},
+	}
+
+	request := NetcupAPIRequest{
+		Action: "updateDnsRecords",
+		Param:  params,
+	}
+
+	response, err := c.makeAPICall(request)
+	if err != nil {
+		return err
+	}
+
+	if response.Status != "success" {
+		switch {
+		case response.StatusCode == 4013:
+			return fmt.Errorf("update DNS records failed: The DNS records are not in valid format. Check record type, hostname format, and destination value")
+		case response.StatusCode == 2016:
+			return fmt.Errorf("update DNS records failed: Domain not found or not accessible with current credentials")
+		case response.StatusCode == 2057:
+			return fmt.Errorf("update DNS records failed: Rate limit exceeded. Please wait and retry later")
+		default:
+			return fmt.Errorf("update DNS records failed: %s (status code: %d)", response.LongMessage, response.StatusCode)
+		}
+	}
+
+	return nil
+}

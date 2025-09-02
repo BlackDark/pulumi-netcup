@@ -1,26 +1,21 @@
 using System.Collections.Generic;
-using System.Linq;
 using Pulumi;
-using Boilerplate = Mynamespace.ProviderBoilerplate;
+using Netcup = Blackdark.PulumiNetcup;
 
 return await Deployment.RunAsync(() => 
 {
-    var myRandomResource = new Boilerplate.Random("myRandomResource", new()
+    var dnsRecord = new Netcup.DnsRecord("example-dns-record", new()
     {
-        Length = 24,
-    });
-
-    var myRandomComponent = new Boilerplate.RandomComponent("myRandomComponent", new()
-    {
-        Length = 24,
+        Domain = "example.com",
+        Name = "test",
+        Type = "A",
+        Value = "1.2.3.4",
     });
 
     return new Dictionary<string, object?>
     {
-        ["output"] = 
-        {
-            { "value", myRandomResource.Result },
-        },
+        ["fqdn"] = dnsRecord.Fqdn,
+        ["recordId"] = dnsRecord.RecordId,
     };
 });
 

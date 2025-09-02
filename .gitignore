@@ -22,3 +22,7 @@ sdk/python/venv
 .config/
 provider/cmd/**/schema.json
 sdk/
+bin-mac/
+Library/
+
+.DS_Store
