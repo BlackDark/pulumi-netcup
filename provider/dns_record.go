@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"strings"
 
+	p "github.com/pulumi/pulumi-go-provider"
 	"github.com/pulumi/pulumi-go-provider/infer"
 )
 
@@ -40,11 +41,11 @@ type DnsRecordArgs struct {
 
 // Annotate provides metadata about the DnsRecordArgs
 func (args *DnsRecordArgs) Annotate(a infer.Annotator) {
-	a.Describe(&args.Domain, "The domain name for the DNS record")
-	a.Describe(&args.Name, "The hostname for the DNS record (use '@' for root domain)")
-	a.Describe(&args.Type, "The DNS record type (A, AAAA, CNAME, MX, TXT, etc.)")
-	a.Describe(&args.Value, "The value/destination for the DNS record")
-	a.Describe(&args.Priority, "The priority for MX and SRV records (optional for other types)")
+	a.Describe(&args.Domain, "The domain name for the DNS record (e.g., 'example.com')")
+	a.Describe(&args.Name, "The hostname for the DNS record. Use '@' for root domain, or specify subdomain (e.g., 'www', 'mail')")
+	a.Describe(&args.Type, "The DNS record type. Supported types: A, AAAA, CNAME, MX, TXT, SRV, CAA, TLSA, NS, DS, OPENPGPKEY, SMIMEA, SSHFP")
+	a.Describe(&args.Value, "The value/destination for the DNS record (e.g., IP address for A records, hostname for CNAME)")
+	a.Describe(&args.Priority, "The priority for MX and SRV records (required for these types, ignored for others)")
 }
 
 type DnsRecordState struct {
@@ -81,8 +82,10 @@ func (r *DnsRecord) Create(
 		return infer.CreateResponse[DnsRecordState]{ID: tempID, Output: state}, nil
 	}
 
-	if err := validateDnsRecord(input); err != nil {
-		return infer.CreateResponse[DnsRecordState]{}, err
+	// Additional validation (should have been caught in Check, but double-check)
+	if failures := validateDnsRecordWithFailures(input); len(failures) > 0 {
+		return infer.CreateResponse[DnsRecordState]{},
+			fmt.Errorf("validation failed: %v", failures)
 	}
 
 	config := infer.GetConfig[Config](ctx)
@@ -126,8 +129,14 @@ func (r *DnsRecord) Read(
 
 	currentRecord, err := client.GetDnsRecordById(recordID, domain)
 	if err != nil {
-		// If record not found, return empty response to indicate resource should be recreated
-		return infer.ReadResponse[DnsRecordArgs, DnsRecordState]{}, nil
+		// Check if this is a "not found" error specifically
+		if isNotFoundError(err) {
+			// Return empty response to indicate resource should be recreated
+			return infer.ReadResponse[DnsRecordArgs, DnsRecordState]{}, nil
+		}
+		// For other errors, return the error to indicate a real problem
+		return infer.ReadResponse[DnsRecordArgs, DnsRecordState]{},
+			fmt.Errorf("failed to read DNS record %s: %w", recordID, err)
 	}
 
 	// Convert priority to pointer (handling empty/zero values)
@@ -163,13 +172,21 @@ func (r *DnsRecord) Update(
 	req infer.UpdateRequest[DnsRecordArgs, DnsRecordState],
 ) (infer.UpdateResponse[DnsRecordState], error) {
 	if req.DryRun {
-		return infer.UpdateResponse[DnsRecordState]{}, nil
+		// For dry runs, return the expected new state
+		newState := DnsRecordState{
+			DnsRecordArgs: req.Inputs,
+			RecordID:      req.State.RecordID,
+			FQDN:          buildFQDN(req.Inputs.Name, req.Inputs.Domain),
+		}
+		return infer.UpdateResponse[DnsRecordState]{Output: newState}, nil
 	}
 
 	inputs := req.Inputs
 
-	if err := validateDnsRecord(inputs); err != nil {
-		return infer.UpdateResponse[DnsRecordState]{}, err
+	// Validate inputs (should have been caught in Check, but double-check)
+	if failures := validateDnsRecordWithFailures(inputs); len(failures) > 0 {
+		return infer.UpdateResponse[DnsRecordState]{},
+			fmt.Errorf("validation failed: %v", failures)
 	}
 
 	// Parse the composite ID to get domain and record ID
@@ -212,48 +229,67 @@ func (r *DnsRecord) Diff(
 ) (infer.DiffResponse, error) {
 	hasChanges := false
 	deleteBeforeReplace := false
+	detailedDiff := make(map[string]p.PropertyDiff)
 
 	// Check for changes that require replacement (domain, name, type)
 	if req.Inputs.Domain != req.State.Domain {
 		hasChanges = true
 		deleteBeforeReplace = true
+		detailedDiff["domain"] = p.PropertyDiff{
+			Kind:      p.UpdateReplace,
+			InputDiff: true,
+		}
 	}
 
 	if req.Inputs.Name != req.State.Name {
 		hasChanges = true
 		deleteBeforeReplace = true
+		detailedDiff["name"] = p.PropertyDiff{
+			Kind:      p.UpdateReplace,
+			InputDiff: true,
+		}
 	}
 
 	if req.Inputs.Type != req.State.Type {
 		hasChanges = true
 		deleteBeforeReplace = true
+		detailedDiff["type"] = p.PropertyDiff{
+			Kind:      p.UpdateReplace,
+			InputDiff: true,
+		}
 	}
 
 	// Check for changes that can be updated in place
 	if req.Inputs.Value != req.State.Value {
 		hasChanges = true
+		detailedDiff["value"] = p.PropertyDiff{
+			Kind:      p.Update,
+			InputDiff: true,
+		}
 	}
 
 	// Handle priority comparison with normalization
-	inputPriority := ""
-	if req.Inputs.Priority != nil {
-		inputPriority = *req.Inputs.Priority
-	}
-	statePriority := ""
-	if req.State.Priority != nil {
-		statePriority = *req.State.Priority
+	if priorityChanged(req.Inputs.Priority, req.State.Priority, req.Inputs.Type) {
+		hasChanges = true
+		detailedDiff["priority"] = p.PropertyDiff{
+			Kind:      p.Update,
+			InputDiff: true,
+		}
 	}
 
-	// Normalize priority values - treat "0" and "" as equivalent for non-priority record types
-	if (inputPriority == "" && statePriority == "0") || (inputPriority == "0" && statePriority == "") {
-		// These are equivalent - no change
-	} else if inputPriority != statePriority {
-		hasChanges = true
+	// Add computed field diffs
+	newFQDN := buildFQDN(req.Inputs.Name, req.Inputs.Domain)
+	if newFQDN != req.State.FQDN {
+		detailedDiff["fqdn"] = p.PropertyDiff{
+			Kind:      p.Update,
+			InputDiff: false, // This is a computed field, not an input
+		}
 	}
 
 	return infer.DiffResponse{
 		DeleteBeforeReplace: deleteBeforeReplace,
 		HasChanges:          hasChanges,
+		DetailedDiff:        detailedDiff,
 	}, nil
 }
 
@@ -289,58 +325,17 @@ func (r *DnsRecord) Check(ctx context.Context, req infer.CheckRequest) (infer.Ch
 		}, err
 	}
 
-	// Perform additional validation using the existing validateDnsRecord function
-	if validationErr := validateDnsRecord(args); validationErr != nil {
-		// Convert validation error to check failure
-		// For now, we'll just return the error - the infer package will handle it
-		return infer.CheckResponse[DnsRecordArgs]{
-			Inputs:   args,
-			Failures: failures,
-		}, validationErr
-	}
+	// Normalize inputs
+	args = normalizeInputs(args)
+
+	// Add custom validation failures
+	additionalFailures := validateDnsRecordWithFailures(args)
+	failures = append(failures, additionalFailures...)
 
 	return infer.CheckResponse[DnsRecordArgs]{
 		Inputs:   args,
 		Failures: failures,
 	}, nil
-}
-
-func validateDnsRecord(args DnsRecordArgs) error {
-	validTypes := map[string]bool{
-		"A": true, "AAAA": true, "MX": true, "CNAME": true, "CAA": true, "SRV": true,
-		"TXT": true, "TLSA": true, "NS": true, "DS": true, "OPENPGPKEY": true, "SMIMEA": true, "SSHFP": true,
-	}
-
-	if !validTypes[args.Type] {
-		return fmt.Errorf("unsupported DNS record type: %s", args.Type)
-	}
-
-	if args.Domain == "" {
-		return fmt.Errorf("domain is required")
-	}
-	if args.Name == "" {
-		return fmt.Errorf("name is required")
-	}
-	if args.Value == "" {
-		return fmt.Errorf("value is required")
-	}
-
-	switch args.Type {
-	case "MX":
-		if args.Priority == nil || *args.Priority == "" {
-			return fmt.Errorf("priority is required for MX records")
-		}
-	case "SRV":
-		if args.Priority == nil || *args.Priority == "" {
-			return fmt.Errorf("priority is required for SRV records")
-		}
-	case "CNAME":
-		if args.Name == "@" {
-			return fmt.Errorf("CNAME records cannot be created for the root domain (@)")
-		}
-	}
-
-	return nil
 }
 
 // WireDependencies defines the dependency relationships between inputs and outputs
@@ -351,6 +346,177 @@ func (r *DnsRecord) WireDependencies(f infer.FieldSelector, args *DnsRecordArgs,
 	f.OutputField(&state.Value).DependsOn(f.InputField(&args.Value))
 	f.OutputField(&state.Priority).DependsOn(f.InputField(&args.Priority))
 	f.OutputField(&state.FQDN).DependsOn(f.InputField(&args.Name), f.InputField(&args.Domain))
+}
+
+// normalizeInputs normalizes and cleans up input values
+func normalizeInputs(args DnsRecordArgs) DnsRecordArgs {
+	// Normalize DNS record type to uppercase
+	args.Type = strings.ToUpper(strings.TrimSpace(args.Type))
+
+	// Normalize domain to lowercase
+	args.Domain = strings.ToLower(strings.TrimSpace(args.Domain))
+
+	// Normalize name
+	args.Name = sanitizeRecordName(args.Name)
+
+	// Normalize value
+	args.Value = strings.TrimSpace(args.Value)
+
+	// Normalize priority if present
+	if args.Priority != nil {
+		priority := strings.TrimSpace(*args.Priority)
+		args.Priority = &priority
+	}
+
+	return args
+}
+
+// validateDnsRecordWithFailures performs validation and returns field-specific failures
+func validateDnsRecordWithFailures(args DnsRecordArgs) []p.CheckFailure {
+	var failures []p.CheckFailure
+
+	validTypes := getValidTypesMap()
+
+	if !validTypes[strings.ToUpper(args.Type)] {
+		failures = append(failures, p.CheckFailure{
+			Property: "type",
+			Reason:   fmt.Sprintf("Unsupported DNS record type: %s. Valid types are: %v", args.Type, getValidTypesList()),
+		})
+	}
+
+	if args.Domain == "" {
+		failures = append(failures, p.CheckFailure{
+			Property: "domain",
+			Reason:   "Domain is required",
+		})
+	} else if !isValidDomain(args.Domain) {
+		failures = append(failures, p.CheckFailure{
+			Property: "domain",
+			Reason:   "Domain format is invalid",
+		})
+	}
+
+	if args.Name == "" {
+		failures = append(failures, p.CheckFailure{
+			Property: "name",
+			Reason:   "Name is required",
+		})
+	}
+
+	if args.Value == "" {
+		failures = append(failures, p.CheckFailure{
+			Property: "value",
+			Reason:   "Value is required",
+		})
+	}
+
+	// Type-specific validations
+	normalizedType := strings.ToUpper(args.Type)
+	switch normalizedType {
+	case "MX", "SRV":
+		if args.Priority == nil || *args.Priority == "" {
+			failures = append(failures, p.CheckFailure{
+				Property: "priority",
+				Reason:   fmt.Sprintf("Priority is required for %s records", normalizedType),
+			})
+		}
+	case "CNAME":
+		if args.Name == "@" {
+			failures = append(failures, p.CheckFailure{
+				Property: "name",
+				Reason:   "CNAME records cannot be created for the root domain (@)",
+			})
+		}
+	}
+
+	return failures
+}
+
+// Legacy validation function for backward compatibility
+func validateDnsRecord(args DnsRecordArgs) error {
+	failures := validateDnsRecordWithFailures(args)
+	if len(failures) > 0 {
+		var messages []string
+		for _, failure := range failures {
+			messages = append(messages, fmt.Sprintf("%s: %s", failure.Property, failure.Reason))
+		}
+		return fmt.Errorf("validation failed: %s", strings.Join(messages, "; "))
+	}
+	return nil
+}
+
+// Helper functions
+func getValidTypesMap() map[string]bool {
+	return map[string]bool{
+		"A": true, "AAAA": true, "MX": true, "CNAME": true, "CAA": true, "SRV": true,
+		"TXT": true, "TLSA": true, "NS": true, "DS": true, "OPENPGPKEY": true, "SMIMEA": true, "SSHFP": true,
+	}
+}
+
+func getValidTypesList() []string {
+	return []string{"A", "AAAA", "MX", "CNAME", "CAA", "SRV", "TXT", "TLSA", "NS", "DS", "OPENPGPKEY", "SMIMEA", "SSHFP"}
+}
+
+func priorityChanged(inputPriority, statePriority *string, recordType string) bool {
+	inputVal := ""
+	if inputPriority != nil {
+		inputVal = *inputPriority
+	}
+
+	stateVal := ""
+	if statePriority != nil {
+		stateVal = *statePriority
+	}
+
+	// For record types that don't use priority, normalize empty and "0" values
+	if !requiresPriority(recordType) {
+		inputNormalized := inputVal == "" || inputVal == "0"
+		stateNormalized := stateVal == "" || stateVal == "0"
+		return inputNormalized != stateNormalized && inputVal != stateVal
+	}
+
+	return inputVal != stateVal
+}
+
+func requiresPriority(recordType string) bool {
+	switch strings.ToUpper(recordType) {
+	case "MX", "SRV":
+		return true
+	default:
+		return false
+	}
+}
+
+func isValidDomain(domain string) bool {
+	if domain == "" {
+		return false
+	}
+	// Basic domain validation - can be enhanced as needed
+	return !strings.Contains(domain, " ") && strings.Contains(domain, ".")
+}
+
+func sanitizeRecordName(name string) string {
+	name = strings.TrimSpace(name)
+	if name == "" {
+		return "@"
+	}
+	return name
+}
+
+func isNotFoundError(err error) bool {
+	if err == nil {
+		return false
+	}
+
+	errMsg := strings.ToLower(err.Error())
+
+	// Check for various "not found" indicators from the Netcup API
+	return strings.Contains(errMsg, "dns record not found") ||
+		strings.Contains(errMsg, "not found") ||
+		strings.Contains(errMsg, "record not found") ||
+		strings.Contains(errMsg, "domain not found") ||
+		// Check for specific Netcup status codes that indicate "not found"
+		strings.Contains(errMsg, "status code: 2016") // Domain not found
 }
 
 // createCompositeID creates a composite ID in the format "domain:recordID"
@@ -377,4 +543,9 @@ func buildFQDN(name, domain string) string {
 		return domain
 	}
 	return fmt.Sprintf("%s.%s", name, domain)
+}
+
+// GetID returns the resource ID in a consistent format
+func (r *DnsRecord) GetID(state DnsRecordState) string {
+	return createCompositeID(state.Domain, state.RecordID)
 }
