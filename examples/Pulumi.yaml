@@ -1,0 +1,4 @@
+config:
+  netcup:apiKey: "dummy"
+  netcup:apiPassword: "dummy"
+  netcup:customerId: "dummy"

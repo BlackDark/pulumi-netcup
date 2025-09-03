@@ -26,3 +26,4 @@ bin-mac/
 Library/
 
 .DS_Store
+coverage.txt

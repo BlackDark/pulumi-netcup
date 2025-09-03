@@ -63,7 +63,7 @@ func TestDnsRecordValidation(t *testing.T) {
 				Value:  "mail.example.com",
 			},
 			expectError: true,
-			errorMsg:    "priority is required for MX records",
+			errorMsg:    "Priority is required for MX records",
 		},
 		{
 			name: "invalid CNAME for root domain",
@@ -74,7 +74,7 @@ func TestDnsRecordValidation(t *testing.T) {
 				Value:  "target.example.com",
 			},
 			expectError: true,
-			errorMsg:    "CNAME records cannot be created for the root domain",
+			errorMsg:    "CNAME records cannot be created for the root domain (@)",
 		},
 		{
 			name: "invalid record type",
@@ -85,7 +85,7 @@ func TestDnsRecordValidation(t *testing.T) {
 				Value:  "1.2.3.4",
 			},
 			expectError: true,
-			errorMsg:    "unsupported DNS record type",
+			errorMsg:    "Unsupported DNS record type",
 		},
 		{
 			name: "missing domain",
@@ -95,7 +95,7 @@ func TestDnsRecordValidation(t *testing.T) {
 				Value: "1.2.3.4",
 			},
 			expectError: true,
-			errorMsg:    "domain is required",
+			errorMsg:    "Domain is required",
 		},
 		{
 			name: "missing name",
@@ -105,7 +105,7 @@ func TestDnsRecordValidation(t *testing.T) {
 				Value:  "1.2.3.4",
 			},
 			expectError: true,
-			errorMsg:    "name is required",
+			errorMsg:    "Name is required",
 		},
 		{
 			name: "missing value",
@@ -115,7 +115,7 @@ func TestDnsRecordValidation(t *testing.T) {
 				Type:   "A",
 			},
 			expectError: true,
-			errorMsg:    "value is required",
+			errorMsg:    "Value is required",
 		},
 	}
 
@@ -124,7 +124,7 @@ func TestDnsRecordValidation(t *testing.T) {
 			err := validateDnsRecord(tt.args)
 			if tt.expectError {
 				require.Error(t, err)
-				assert.Contains(t, err.Error(), tt.errorMsg)
+				assert.ErrorContains(t, err, tt.errorMsg)
 			} else {
 				require.NoError(t, err)
 			}

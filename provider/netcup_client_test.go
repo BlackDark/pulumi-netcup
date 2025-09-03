@@ -213,10 +213,8 @@ func TestNetcupClient_GetAllDnsRecords_ParseResponse(t *testing.T) {
 		record := &DnsRecordInfo{
 			ID:          id,
 			Hostname:    hostname,
-			Name:        hostname,
 			Type:        recordType,
 			Destination: destination,
-			Value:       destination,
 		}
 
 		if priority, ok := recordMap["priority"].(string); ok {
@@ -330,8 +328,6 @@ func TestNetcupClient_UpdateRecordLogic(t *testing.T) {
 	// Verify the record was updated
 	assert.Equal(t, "test", existingRecords[0].Hostname)
 	assert.Equal(t, "5.6.7.8", existingRecords[0].Destination)
-	assert.Equal(t, "test", existingRecords[0].Name)
-	assert.Equal(t, "5.6.7.8", existingRecords[0].Value)
 
 	// Verify the second record wasn't affected
 	assert.Equal(t, "www", existingRecords[1].Hostname)

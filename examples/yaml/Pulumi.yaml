@@ -1,16 +1,20 @@
-name: netcup
+name: netcup-dns-example
 runtime: yaml
-
+description: A minimal Netcup DNS record example
 resources:
-  myRandomResource:
-    type: netcup:Random
+  myDnsRecord:
+    type: netcup:index:DnsRecord
     properties:
-      length: 24
-  myRandomComponent:
-    type: netcup:RandomComponent
-    properties:
-      length: 24
-
+      domain: "example.com"
+      name: "www"
+      type: "A"
+      value: "192.0.2.1"
 outputs:
-  output:
-    value: ${myRandomResource.result}
+  recordId:
+    value: ${myDnsRecord.recordId}
+  fqdn:
+    value: ${myDnsRecord.fqdn}
+config:
+  netcup:apiKey: "dummy"
+  netcup:apiPassword: "dummy"
+  netcup:customerId: "dummy"

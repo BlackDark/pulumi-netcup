@@ -1,2 +1,7 @@
-name: netcup
+name: netcup-go-example
 runtime: go
+description: A minimal Go program to manage a Netcup DNS record
+config:
+  netcup:apiKey: "dummy"
+  netcup:apiPassword: "dummy"
+  netcup:customerId: "dummy"
