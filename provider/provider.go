@@ -53,7 +53,7 @@ func Provider() p.Provider {
 // Config defines provider-level configuration
 type Config struct {
 	// Netcup API credentials
-	ApiKey      string `pulumi:"apiKey"`
+	ApiKey      string `pulumi:"apiKey" provider:"secret"`
 	ApiPassword string `pulumi:"apiPassword" provider:"secret"`
 	CustomerID  string `pulumi:"customerId"`
 }

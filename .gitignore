@@ -21,7 +21,7 @@ sdk/python/venv
 .venv/
 .config/
 provider/cmd/**/schema.json
-sdk/
+#sdk/
 bin-mac/
 Library/
 
