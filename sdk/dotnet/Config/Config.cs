@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Immutable;
 
-namespace Netcup.Netcup
+namespace Blackdark.Netcup
 {
     public static class Config
     {

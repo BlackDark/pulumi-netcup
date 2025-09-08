@@ -1,5 +1,5 @@
 {
-    "name": "@netcup/netcup",
+    "name": "@blackdark/netcup",
     "version": "1.0.0-alpha.0+dev",
     "homepage": "https://github.com/blackdark/pulumi-netcup",
     "scripts": {

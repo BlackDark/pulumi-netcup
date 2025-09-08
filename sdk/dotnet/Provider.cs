@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using Pulumi.Serialization;
 using Pulumi;
 
-namespace Netcup.Netcup
+namespace Blackdark.Netcup
 {
     [NetcupResourceType("pulumi:providers:netcup")]
     public partial class Provider : global::Pulumi.ProviderResource

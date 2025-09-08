@@ -23,31 +23,29 @@ builds:
       - -X github.com/blackdark/pulumi-netcup/provider.Version={{.Tag}}
     binary: pulumi-resource-netcup
 
-  - id: build-provider-sign-windows
-    dir: provider
-    env:
-      - CGO_ENABLED=0
-      - GO111MODULE=on
-    goos:
-      - windows
-    goarch:
-      - amd64
-      - arm64
-    main: ./cmd/pulumi-resource-netcup/
-    ldflags:
-      - -s
-      - -w
-      - -X github.com/blackdark/pulumi-netcup/provider.Version={{.Tag}}
-    binary: pulumi-resource-netcup
-    hooks:
-      post:
-        - make sign-goreleaser-exe-{{ .Arch }}
+  # - id: build-provider-sign-windows
+  #   dir: provider
+  #   env:
+  #     - CGO_ENABLED=0
+  #     - GO111MODULE=on
+  #   goos:
+  #     - windows
+  #   goarch:
+  #     - amd64
+  #     - arm64
+  #   main: ./cmd/pulumi-resource-netcup/
+  #   ldflags:
+  #     - -s
+  #     - -w
+  #     - -X github.com/blackdark/pulumi-netcup/provider.Version={{.Tag}}
+  #   binary: pulumi-resource-netcup
+  #   hooks:
+  #     post:
+  #       - make sign-goreleaser-exe-{{ .Arch }}
 
 archives:
   - name_template: "{{ .Binary }}-{{ .Tag }}-{{ .Os }}-{{ .Arch }}"
     formats: ["tar.gz"]
-
-
 
 changelog:
   disable: true

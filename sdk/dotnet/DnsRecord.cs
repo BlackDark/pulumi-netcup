@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using Pulumi.Serialization;
 using Pulumi;
 
-namespace Netcup.Netcup
+namespace Blackdark.Netcup
 {
     /// <summary>
     /// A DNS record managed by Netcup DNS service

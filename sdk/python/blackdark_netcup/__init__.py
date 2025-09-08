@@ -11,10 +11,10 @@ from .provider import *
 
 # Make subpackages available:
 if typing.TYPE_CHECKING:
-    import netcup_netcup.config as __config
+    import blackdark_netcup.config as __config
     config = __config
 else:
-    config = _utilities.lazy_import('netcup_netcup.config')
+    config = _utilities.lazy_import('blackdark_netcup.config')
 
 _utilities.register(
     resource_modules="""
@@ -22,7 +22,7 @@ _utilities.register(
  {
   "pkg": "netcup",
   "mod": "index",
-  "fqn": "netcup_netcup",
+  "fqn": "blackdark_netcup",
   "classes": {
    "netcup:index:DNSRecord": "DNSRecord"
   }
@@ -34,7 +34,7 @@ _utilities.register(
  {
   "pkg": "netcup",
   "token": "pulumi:providers:netcup",
-  "fqn": "netcup_netcup",
+  "fqn": "blackdark_netcup",
   "class": "Provider"
  }
 ]

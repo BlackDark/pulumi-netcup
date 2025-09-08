@@ -35,7 +35,7 @@ func Provider() p.Provider {
 		WithDisplayName("pulumi-netcup").
 		WithDescription("A Pulumi provider for managing Netcup DNS records and resources.").
 		WithHomepage("https://github.com/blackdark/pulumi-netcup").
-		WithNamespace("netcup").
+		WithNamespace("blackdark").
 		WithGoImportPath("github.com/blackdark/pulumi-netcup/sdk/go/pulumi-netcup").
 		WithResources(
 			infer.Resource(&DNSRecord{}),
