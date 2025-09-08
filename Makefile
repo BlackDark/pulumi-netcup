@@ -280,3 +280,14 @@ build_dotnet: dotnet_sdk # Required by CI
 
 bin/pulumi-gen-${PACK}: # Required by CI
 	touch bin/pulumi-gen-${PACK}
+
+.PHONY: clean
+clean: 
+	@rm -rf bin bin-mac dist vendor
+
+.PHONY: release
+goreleaser: 
+	@goreleaser build
+
+goreleaser-snap: 
+	@goreleaser build --snapshot

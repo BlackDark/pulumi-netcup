@@ -10,7 +10,7 @@ permissions:
   id-token: write # Required for requesting the JWT before publishing to Pypi and NPM
 
 env:
-  PROVIDER: "defang"
+  PROVIDER: "netcup"
   # THIS GITHUB_TOKEN IS A REQUIREMENT TO BE ABLE TO WRITE TO GH RELEASES
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   # IF YOU NEED TO PUBLISH A NPM PACKAGE THEN ENSURE A NPM_TOKEN SECRET IS SET
