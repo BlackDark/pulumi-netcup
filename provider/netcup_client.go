@@ -36,6 +36,24 @@ type NetcupClient struct {
 	apiPassword string
 	customerID  string
 	httpClient  *http.Client
+	endpoint    string
+}
+
+// ClientOption represents a functional option for configuring NetcupClient
+type ClientOption func(*NetcupClient)
+
+// WithEndpoint sets a custom API endpoint (primarily for testing)
+func WithEndpoint(endpoint string) ClientOption {
+	return func(c *NetcupClient) {
+		c.endpoint = endpoint
+	}
+}
+
+// WithHTTPClient sets a custom HTTP client (primarily for testing)
+func WithHTTPClient(client *http.Client) ClientOption {
+	return func(c *NetcupClient) {
+		c.httpClient = client
+	}
 }
 
 // NetcupAPIRequest represents the structure of API requests
@@ -75,15 +93,23 @@ type LoginParams struct {
 }
 
 // NewNetcupClient creates a new Netcup API client
-func NewNetcupClient(apiKey, apiPassword, customerID string) *NetcupClient {
-	return &NetcupClient{
+func NewNetcupClient(apiKey, apiPassword, customerID string, opts ...ClientOption) *NetcupClient {
+	client := &NetcupClient{
 		apiKey:      apiKey,
 		apiPassword: apiPassword,
 		customerID:  customerID,
 		httpClient: &http.Client{
 			Timeout: APITimeout,
 		},
+		endpoint: NetcupAPIEndpoint,
 	}
+
+	// Apply options
+	for _, opt := range opts {
+		opt(client)
+	}
+
+	return client
 }
 
 func (c *NetcupClient) login() (string, error) {
@@ -157,7 +183,7 @@ func (c *NetcupClient) makeAPICall(request NetcupAPIRequest) (*NetcupAPIResponse
 		return nil, fmt.Errorf("failed to marshal request: %w", err)
 	}
 
-	resp, err := c.httpClient.Post(NetcupAPIEndpoint, "application/json", bytes.NewBuffer(jsonData))
+	resp, err := c.httpClient.Post(c.endpoint, "application/json", bytes.NewBuffer(jsonData))
 	if err != nil {
 		return nil, fmt.Errorf("HTTP request failed: %w", err)
 	}

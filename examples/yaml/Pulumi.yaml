@@ -3,7 +3,7 @@ runtime: yaml
 description: A minimal Netcup DNS record example
 resources:
   myDnsRecord:
-    type: netcup:index:DnsRecord
+    type: netcup:index:DNSRecord
     properties:
       domain: "example.com"
       name: "www"

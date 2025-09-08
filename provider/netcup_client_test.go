@@ -15,7 +15,6 @@
 package provider
 
 import (
-	"bytes"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -34,6 +33,20 @@ func TestNetcupClient_NewClient(t *testing.T) {
 	assert.Equal(t, "test-customer", client.customerID)
 	assert.NotNil(t, client.httpClient)
 	assert.Equal(t, APITimeout, client.httpClient.Timeout)
+	assert.Equal(t, NetcupAPIEndpoint, client.endpoint)
+}
+
+func TestNetcupClient_NewClientWithOptions(t *testing.T) {
+	t.Parallel()
+	testEndpoint := "http://test.example.com/api"
+	client := NewNetcupClient("test-key", "test-password", "test-customer", WithEndpoint(testEndpoint))
+
+	assert.Equal(t, "test-key", client.apiKey)
+	assert.Equal(t, "test-password", client.apiPassword)
+	assert.Equal(t, "test-customer", client.customerID)
+	assert.NotNil(t, client.httpClient)
+	assert.Equal(t, APITimeout, client.httpClient.Timeout)
+	assert.Equal(t, testEndpoint, client.endpoint)
 }
 
 func TestNetcupClient_Login_Success(t *testing.T) {
@@ -59,65 +72,12 @@ func TestNetcupClient_Login_Success(t *testing.T) {
 	}))
 	defer server.Close()
 
-	client := NewNetcupClient("test-key", "test-password", "test-customer")
+	// Create a test client with the mock server endpoint
+	client := NewNetcupClient("test-key", "test-password", "test-customer", WithEndpoint(server.URL))
 
-	// Note: We would normally override the endpoint to use our test server
-
-	// Create a client with a custom HTTP client pointing to our test server
-	client.httpClient = &http.Client{}
-
-	// We need to test the makeAPICall method with our test server
-	loginParams := LoginParams{
-		CustomerNumber: "test-customer",
-		APIKey:         "test-key",
-		APIPassword:    "test-password",
-	}
-
-	request := NetcupAPIRequest{
-		Action: "login",
-		Param:  loginParams,
-	}
-
-	// Temporarily override the endpoint by creating a custom client
-	testClient := &NetcupClient{
-		apiKey:      "test-key",
-		apiPassword: "test-password",
-		customerID:  "test-customer",
-		httpClient:  &http.Client{},
-	}
-
-	// Test the makeAPICall method directly with the test server
-	originalMakeAPICall := func(request NetcupAPIRequest) (*NetcupAPIResponse, error) {
-		jsonData, err := json.Marshal(request)
-		if err != nil {
-			return nil, err
-		}
-
-		resp, err := testClient.httpClient.Post(server.URL, "application/json", bytes.NewBuffer(jsonData))
-		if err != nil {
-			return nil, err
-		}
-		defer func() {
-			_ = resp.Body.Close()
-		}()
-
-		var apiResponse NetcupAPIResponse
-		if err := json.NewDecoder(resp.Body).Decode(&apiResponse); err != nil {
-			return nil, err
-		}
-
-		return &apiResponse, nil
-	}
-
-	response, err := originalMakeAPICall(request)
+	// Test the actual login method
+	sessionID, err := client.login()
 	require.NoError(t, err)
-	assert.Equal(t, "success", response.Status)
-	assert.Equal(t, 2000, response.StatusCode)
-
-	responseData, ok := response.ResponseData.(map[string]interface{})
-	require.True(t, ok)
-	sessionID, ok := responseData["apisessionid"].(string)
-	require.True(t, ok)
 	assert.Equal(t, "test-session-id", sessionID)
 }
 
