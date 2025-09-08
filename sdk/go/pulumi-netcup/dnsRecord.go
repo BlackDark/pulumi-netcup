@@ -13,7 +13,7 @@ import (
 )
 
 // A DNS record managed by Netcup DNS service
-type DnsRecord struct {
+type DNSRecord struct {
 	pulumi.CustomResourceState
 
 	// The domain name for the DNS record
@@ -32,9 +32,9 @@ type DnsRecord struct {
 	Value pulumi.StringOutput `pulumi:"value"`
 }
 
-// NewDnsRecord registers a new resource with the given unique name, arguments, and options.
-func NewDnsRecord(ctx *pulumi.Context,
-	name string, args *DnsRecordArgs, opts ...pulumi.ResourceOption) (*DnsRecord, error) {
+// NewDNSRecord registers a new resource with the given unique name, arguments, and options.
+func NewDNSRecord(ctx *pulumi.Context,
+	name string, args *DNSRecordArgs, opts ...pulumi.ResourceOption) (*DNSRecord, error) {
 	if args == nil {
 		return nil, errors.New("missing one or more required arguments")
 	}
@@ -52,38 +52,38 @@ func NewDnsRecord(ctx *pulumi.Context,
 		return nil, errors.New("invalid value for required argument 'Value'")
 	}
 	opts = internal.PkgResourceDefaultOpts(opts)
-	var resource DnsRecord
-	err := ctx.RegisterResource("netcup:index:DnsRecord", name, args, &resource, opts...)
+	var resource DNSRecord
+	err := ctx.RegisterResource("netcup:index:DNSRecord", name, args, &resource, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return &resource, nil
 }
 
-// GetDnsRecord gets an existing DnsRecord resource's state with the given name, ID, and optional
+// GetDNSRecord gets an existing DNSRecord resource's state with the given name, ID, and optional
 // state properties that are used to uniquely qualify the lookup (nil if not required).
-func GetDnsRecord(ctx *pulumi.Context,
-	name string, id pulumi.IDInput, state *DnsRecordState, opts ...pulumi.ResourceOption) (*DnsRecord, error) {
-	var resource DnsRecord
-	err := ctx.ReadResource("netcup:index:DnsRecord", name, id, state, &resource, opts...)
+func GetDNSRecord(ctx *pulumi.Context,
+	name string, id pulumi.IDInput, state *DNSRecordState, opts ...pulumi.ResourceOption) (*DNSRecord, error) {
+	var resource DNSRecord
+	err := ctx.ReadResource("netcup:index:DNSRecord", name, id, state, &resource, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return &resource, nil
 }
 
-// Input properties used for looking up and filtering DnsRecord resources.
-type dnsRecordState struct {
+// Input properties used for looking up and filtering DNSRecord resources.
+type dnsrecordState struct {
 }
 
-type DnsRecordState struct {
+type DNSRecordState struct {
 }
 
-func (DnsRecordState) ElementType() reflect.Type {
-	return reflect.TypeOf((*dnsRecordState)(nil)).Elem()
+func (DNSRecordState) ElementType() reflect.Type {
+	return reflect.TypeOf((*dnsrecordState)(nil)).Elem()
 }
 
-type dnsRecordArgs struct {
+type dnsrecordArgs struct {
 	// The domain name for the DNS record (e.g., 'example.com')
 	Domain string `pulumi:"domain"`
 	// The hostname for the DNS record. Use '@' for root domain, or specify subdomain (e.g., 'www', 'mail')
@@ -96,8 +96,8 @@ type dnsRecordArgs struct {
 	Value string `pulumi:"value"`
 }
 
-// The set of arguments for constructing a DnsRecord resource.
-type DnsRecordArgs struct {
+// The set of arguments for constructing a DNSRecord resource.
+type DNSRecordArgs struct {
 	// The domain name for the DNS record (e.g., 'example.com')
 	Domain pulumi.StringInput
 	// The hostname for the DNS record. Use '@' for root domain, or specify subdomain (e.g., 'www', 'mail')
@@ -110,173 +110,173 @@ type DnsRecordArgs struct {
 	Value pulumi.StringInput
 }
 
-func (DnsRecordArgs) ElementType() reflect.Type {
-	return reflect.TypeOf((*dnsRecordArgs)(nil)).Elem()
+func (DNSRecordArgs) ElementType() reflect.Type {
+	return reflect.TypeOf((*dnsrecordArgs)(nil)).Elem()
 }
 
-type DnsRecordInput interface {
+type DNSRecordInput interface {
 	pulumi.Input
 
-	ToDnsRecordOutput() DnsRecordOutput
-	ToDnsRecordOutputWithContext(ctx context.Context) DnsRecordOutput
+	ToDNSRecordOutput() DNSRecordOutput
+	ToDNSRecordOutputWithContext(ctx context.Context) DNSRecordOutput
 }
 
-func (*DnsRecord) ElementType() reflect.Type {
-	return reflect.TypeOf((**DnsRecord)(nil)).Elem()
+func (*DNSRecord) ElementType() reflect.Type {
+	return reflect.TypeOf((**DNSRecord)(nil)).Elem()
 }
 
-func (i *DnsRecord) ToDnsRecordOutput() DnsRecordOutput {
-	return i.ToDnsRecordOutputWithContext(context.Background())
+func (i *DNSRecord) ToDNSRecordOutput() DNSRecordOutput {
+	return i.ToDNSRecordOutputWithContext(context.Background())
 }
 
-func (i *DnsRecord) ToDnsRecordOutputWithContext(ctx context.Context) DnsRecordOutput {
-	return pulumi.ToOutputWithContext(ctx, i).(DnsRecordOutput)
+func (i *DNSRecord) ToDNSRecordOutputWithContext(ctx context.Context) DNSRecordOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(DNSRecordOutput)
 }
 
-// DnsRecordArrayInput is an input type that accepts DnsRecordArray and DnsRecordArrayOutput values.
-// You can construct a concrete instance of `DnsRecordArrayInput` via:
+// DNSRecordArrayInput is an input type that accepts DNSRecordArray and DNSRecordArrayOutput values.
+// You can construct a concrete instance of `DNSRecordArrayInput` via:
 //
-//	DnsRecordArray{ DnsRecordArgs{...} }
-type DnsRecordArrayInput interface {
+//	DNSRecordArray{ DNSRecordArgs{...} }
+type DNSRecordArrayInput interface {
 	pulumi.Input
 
-	ToDnsRecordArrayOutput() DnsRecordArrayOutput
-	ToDnsRecordArrayOutputWithContext(context.Context) DnsRecordArrayOutput
+	ToDNSRecordArrayOutput() DNSRecordArrayOutput
+	ToDNSRecordArrayOutputWithContext(context.Context) DNSRecordArrayOutput
 }
 
-type DnsRecordArray []DnsRecordInput
+type DNSRecordArray []DNSRecordInput
 
-func (DnsRecordArray) ElementType() reflect.Type {
-	return reflect.TypeOf((*[]*DnsRecord)(nil)).Elem()
+func (DNSRecordArray) ElementType() reflect.Type {
+	return reflect.TypeOf((*[]*DNSRecord)(nil)).Elem()
 }
 
-func (i DnsRecordArray) ToDnsRecordArrayOutput() DnsRecordArrayOutput {
-	return i.ToDnsRecordArrayOutputWithContext(context.Background())
+func (i DNSRecordArray) ToDNSRecordArrayOutput() DNSRecordArrayOutput {
+	return i.ToDNSRecordArrayOutputWithContext(context.Background())
 }
 
-func (i DnsRecordArray) ToDnsRecordArrayOutputWithContext(ctx context.Context) DnsRecordArrayOutput {
-	return pulumi.ToOutputWithContext(ctx, i).(DnsRecordArrayOutput)
+func (i DNSRecordArray) ToDNSRecordArrayOutputWithContext(ctx context.Context) DNSRecordArrayOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(DNSRecordArrayOutput)
 }
 
-// DnsRecordMapInput is an input type that accepts DnsRecordMap and DnsRecordMapOutput values.
-// You can construct a concrete instance of `DnsRecordMapInput` via:
+// DNSRecordMapInput is an input type that accepts DNSRecordMap and DNSRecordMapOutput values.
+// You can construct a concrete instance of `DNSRecordMapInput` via:
 //
-//	DnsRecordMap{ "key": DnsRecordArgs{...} }
-type DnsRecordMapInput interface {
+//	DNSRecordMap{ "key": DNSRecordArgs{...} }
+type DNSRecordMapInput interface {
 	pulumi.Input
 
-	ToDnsRecordMapOutput() DnsRecordMapOutput
-	ToDnsRecordMapOutputWithContext(context.Context) DnsRecordMapOutput
+	ToDNSRecordMapOutput() DNSRecordMapOutput
+	ToDNSRecordMapOutputWithContext(context.Context) DNSRecordMapOutput
 }
 
-type DnsRecordMap map[string]DnsRecordInput
+type DNSRecordMap map[string]DNSRecordInput
 
-func (DnsRecordMap) ElementType() reflect.Type {
-	return reflect.TypeOf((*map[string]*DnsRecord)(nil)).Elem()
+func (DNSRecordMap) ElementType() reflect.Type {
+	return reflect.TypeOf((*map[string]*DNSRecord)(nil)).Elem()
 }
 
-func (i DnsRecordMap) ToDnsRecordMapOutput() DnsRecordMapOutput {
-	return i.ToDnsRecordMapOutputWithContext(context.Background())
+func (i DNSRecordMap) ToDNSRecordMapOutput() DNSRecordMapOutput {
+	return i.ToDNSRecordMapOutputWithContext(context.Background())
 }
 
-func (i DnsRecordMap) ToDnsRecordMapOutputWithContext(ctx context.Context) DnsRecordMapOutput {
-	return pulumi.ToOutputWithContext(ctx, i).(DnsRecordMapOutput)
+func (i DNSRecordMap) ToDNSRecordMapOutputWithContext(ctx context.Context) DNSRecordMapOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(DNSRecordMapOutput)
 }
 
-type DnsRecordOutput struct{ *pulumi.OutputState }
+type DNSRecordOutput struct{ *pulumi.OutputState }
 
-func (DnsRecordOutput) ElementType() reflect.Type {
-	return reflect.TypeOf((**DnsRecord)(nil)).Elem()
+func (DNSRecordOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((**DNSRecord)(nil)).Elem()
 }
 
-func (o DnsRecordOutput) ToDnsRecordOutput() DnsRecordOutput {
+func (o DNSRecordOutput) ToDNSRecordOutput() DNSRecordOutput {
 	return o
 }
 
-func (o DnsRecordOutput) ToDnsRecordOutputWithContext(ctx context.Context) DnsRecordOutput {
+func (o DNSRecordOutput) ToDNSRecordOutputWithContext(ctx context.Context) DNSRecordOutput {
 	return o
 }
 
 // The domain name for the DNS record
-func (o DnsRecordOutput) Domain() pulumi.StringOutput {
-	return o.ApplyT(func(v *DnsRecord) pulumi.StringOutput { return v.Domain }).(pulumi.StringOutput)
+func (o DNSRecordOutput) Domain() pulumi.StringOutput {
+	return o.ApplyT(func(v *DNSRecord) pulumi.StringOutput { return v.Domain }).(pulumi.StringOutput)
 }
 
 // The fully qualified domain name
-func (o DnsRecordOutput) Fqdn() pulumi.StringOutput {
-	return o.ApplyT(func(v *DnsRecord) pulumi.StringOutput { return v.Fqdn }).(pulumi.StringOutput)
+func (o DNSRecordOutput) Fqdn() pulumi.StringOutput {
+	return o.ApplyT(func(v *DNSRecord) pulumi.StringOutput { return v.Fqdn }).(pulumi.StringOutput)
 }
 
 // The hostname for the DNS record
-func (o DnsRecordOutput) Name() pulumi.StringOutput {
-	return o.ApplyT(func(v *DnsRecord) pulumi.StringOutput { return v.Name }).(pulumi.StringOutput)
+func (o DNSRecordOutput) Name() pulumi.StringOutput {
+	return o.ApplyT(func(v *DNSRecord) pulumi.StringOutput { return v.Name }).(pulumi.StringOutput)
 }
 
 // The priority for the DNS record
-func (o DnsRecordOutput) Priority() pulumi.StringPtrOutput {
-	return o.ApplyT(func(v *DnsRecord) pulumi.StringPtrOutput { return v.Priority }).(pulumi.StringPtrOutput)
+func (o DNSRecordOutput) Priority() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v *DNSRecord) pulumi.StringPtrOutput { return v.Priority }).(pulumi.StringPtrOutput)
 }
 
 // The unique identifier for the DNS record
-func (o DnsRecordOutput) RecordId() pulumi.StringOutput {
-	return o.ApplyT(func(v *DnsRecord) pulumi.StringOutput { return v.RecordId }).(pulumi.StringOutput)
+func (o DNSRecordOutput) RecordId() pulumi.StringOutput {
+	return o.ApplyT(func(v *DNSRecord) pulumi.StringOutput { return v.RecordId }).(pulumi.StringOutput)
 }
 
 // The DNS record type
-func (o DnsRecordOutput) Type() pulumi.StringOutput {
-	return o.ApplyT(func(v *DnsRecord) pulumi.StringOutput { return v.Type }).(pulumi.StringOutput)
+func (o DNSRecordOutput) Type() pulumi.StringOutput {
+	return o.ApplyT(func(v *DNSRecord) pulumi.StringOutput { return v.Type }).(pulumi.StringOutput)
 }
 
 // The value/destination for the DNS record
-func (o DnsRecordOutput) Value() pulumi.StringOutput {
-	return o.ApplyT(func(v *DnsRecord) pulumi.StringOutput { return v.Value }).(pulumi.StringOutput)
+func (o DNSRecordOutput) Value() pulumi.StringOutput {
+	return o.ApplyT(func(v *DNSRecord) pulumi.StringOutput { return v.Value }).(pulumi.StringOutput)
 }
 
-type DnsRecordArrayOutput struct{ *pulumi.OutputState }
+type DNSRecordArrayOutput struct{ *pulumi.OutputState }
 
-func (DnsRecordArrayOutput) ElementType() reflect.Type {
-	return reflect.TypeOf((*[]*DnsRecord)(nil)).Elem()
+func (DNSRecordArrayOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*[]*DNSRecord)(nil)).Elem()
 }
 
-func (o DnsRecordArrayOutput) ToDnsRecordArrayOutput() DnsRecordArrayOutput {
+func (o DNSRecordArrayOutput) ToDNSRecordArrayOutput() DNSRecordArrayOutput {
 	return o
 }
 
-func (o DnsRecordArrayOutput) ToDnsRecordArrayOutputWithContext(ctx context.Context) DnsRecordArrayOutput {
+func (o DNSRecordArrayOutput) ToDNSRecordArrayOutputWithContext(ctx context.Context) DNSRecordArrayOutput {
 	return o
 }
 
-func (o DnsRecordArrayOutput) Index(i pulumi.IntInput) DnsRecordOutput {
-	return pulumi.All(o, i).ApplyT(func(vs []interface{}) *DnsRecord {
-		return vs[0].([]*DnsRecord)[vs[1].(int)]
-	}).(DnsRecordOutput)
+func (o DNSRecordArrayOutput) Index(i pulumi.IntInput) DNSRecordOutput {
+	return pulumi.All(o, i).ApplyT(func(vs []interface{}) *DNSRecord {
+		return vs[0].([]*DNSRecord)[vs[1].(int)]
+	}).(DNSRecordOutput)
 }
 
-type DnsRecordMapOutput struct{ *pulumi.OutputState }
+type DNSRecordMapOutput struct{ *pulumi.OutputState }
 
-func (DnsRecordMapOutput) ElementType() reflect.Type {
-	return reflect.TypeOf((*map[string]*DnsRecord)(nil)).Elem()
+func (DNSRecordMapOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*map[string]*DNSRecord)(nil)).Elem()
 }
 
-func (o DnsRecordMapOutput) ToDnsRecordMapOutput() DnsRecordMapOutput {
+func (o DNSRecordMapOutput) ToDNSRecordMapOutput() DNSRecordMapOutput {
 	return o
 }
 
-func (o DnsRecordMapOutput) ToDnsRecordMapOutputWithContext(ctx context.Context) DnsRecordMapOutput {
+func (o DNSRecordMapOutput) ToDNSRecordMapOutputWithContext(ctx context.Context) DNSRecordMapOutput {
 	return o
 }
 
-func (o DnsRecordMapOutput) MapIndex(k pulumi.StringInput) DnsRecordOutput {
-	return pulumi.All(o, k).ApplyT(func(vs []interface{}) *DnsRecord {
-		return vs[0].(map[string]*DnsRecord)[vs[1].(string)]
-	}).(DnsRecordOutput)
+func (o DNSRecordMapOutput) MapIndex(k pulumi.StringInput) DNSRecordOutput {
+	return pulumi.All(o, k).ApplyT(func(vs []interface{}) *DNSRecord {
+		return vs[0].(map[string]*DNSRecord)[vs[1].(string)]
+	}).(DNSRecordOutput)
 }
 
 func init() {
-	pulumi.RegisterInputType(reflect.TypeOf((*DnsRecordInput)(nil)).Elem(), &DnsRecord{})
-	pulumi.RegisterInputType(reflect.TypeOf((*DnsRecordArrayInput)(nil)).Elem(), DnsRecordArray{})
-	pulumi.RegisterInputType(reflect.TypeOf((*DnsRecordMapInput)(nil)).Elem(), DnsRecordMap{})
-	pulumi.RegisterOutputType(DnsRecordOutput{})
-	pulumi.RegisterOutputType(DnsRecordArrayOutput{})
-	pulumi.RegisterOutputType(DnsRecordMapOutput{})
+	pulumi.RegisterInputType(reflect.TypeOf((*DNSRecordInput)(nil)).Elem(), &DNSRecord{})
+	pulumi.RegisterInputType(reflect.TypeOf((*DNSRecordArrayInput)(nil)).Elem(), DNSRecordArray{})
+	pulumi.RegisterInputType(reflect.TypeOf((*DNSRecordMapInput)(nil)).Elem(), DNSRecordMap{})
+	pulumi.RegisterOutputType(DNSRecordOutput{})
+	pulumi.RegisterOutputType(DNSRecordArrayOutput{})
+	pulumi.RegisterOutputType(DNSRecordMapOutput{})
 }

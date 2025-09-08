@@ -15,10 +15,10 @@ else:
     from typing_extensions import NotRequired, TypedDict, TypeAlias
 from . import _utilities
 
-__all__ = ['DnsRecordArgs', 'DnsRecord']
+__all__ = ['DNSRecordArgs', 'DNSRecord']
 
 @pulumi.input_type
-class DnsRecordArgs:
+class DNSRecordArgs:
     def __init__(__self__, *,
                  domain: pulumi.Input[builtins.str],
                  name: pulumi.Input[builtins.str],
@@ -26,7 +26,7 @@ class DnsRecordArgs:
                  value: pulumi.Input[builtins.str],
                  priority: Optional[pulumi.Input[builtins.str]] = None):
         """
-        The set of arguments for constructing a DnsRecord resource.
+        The set of arguments for constructing a DNSRecord resource.
         :param pulumi.Input[builtins.str] domain: The domain name for the DNS record (e.g., 'example.com')
         :param pulumi.Input[builtins.str] name: The hostname for the DNS record. Use '@' for root domain, or specify subdomain (e.g., 'www', 'mail')
         :param pulumi.Input[builtins.str] type: The DNS record type. Supported types: A, AAAA, CNAME, MX, TXT, SRV, CAA, TLSA, NS, DS, OPENPGPKEY, SMIMEA, SSHFP
@@ -101,8 +101,8 @@ class DnsRecordArgs:
         pulumi.set(self, "priority", value)
 
 
-@pulumi.type_token("netcup:index:DnsRecord")
-class DnsRecord(pulumi.CustomResource):
+@pulumi.type_token("netcup:index:DNSRecord")
+class DNSRecord(pulumi.CustomResource):
     @overload
     def __init__(__self__,
                  resource_name: str,
@@ -128,18 +128,18 @@ class DnsRecord(pulumi.CustomResource):
     @overload
     def __init__(__self__,
                  resource_name: str,
-                 args: DnsRecordArgs,
+                 args: DNSRecordArgs,
                  opts: Optional[pulumi.ResourceOptions] = None):
         """
         A DNS record managed by Netcup DNS service
 
         :param str resource_name: The name of the resource.
-        :param DnsRecordArgs args: The arguments to use to populate this resource's properties.
+        :param DNSRecordArgs args: The arguments to use to populate this resource's properties.
         :param pulumi.ResourceOptions opts: Options for the resource.
         """
         ...
     def __init__(__self__, resource_name: str, *args, **kwargs):
-        resource_args, opts = _utilities.get_resource_args_opts(DnsRecordArgs, pulumi.ResourceOptions, *args, **kwargs)
+        resource_args, opts = _utilities.get_resource_args_opts(DNSRecordArgs, pulumi.ResourceOptions, *args, **kwargs)
         if resource_args is not None:
             __self__._internal_init(resource_name, opts, **resource_args.__dict__)
         else:
@@ -160,7 +160,7 @@ class DnsRecord(pulumi.CustomResource):
         if opts.id is None:
             if __props__ is not None:
                 raise TypeError('__props__ is only valid when passed in combination with a valid opts.id to get an existing resource')
-            __props__ = DnsRecordArgs.__new__(DnsRecordArgs)
+            __props__ = DNSRecordArgs.__new__(DNSRecordArgs)
 
             if domain is None and not opts.urn:
                 raise TypeError("Missing required property 'domain'")
@@ -177,8 +177,8 @@ class DnsRecord(pulumi.CustomResource):
             __props__.__dict__["value"] = value
             __props__.__dict__["fqdn"] = None
             __props__.__dict__["record_id"] = None
-        super(DnsRecord, __self__).__init__(
-            'netcup:index:DnsRecord',
+        super(DNSRecord, __self__).__init__(
+            'netcup:index:DNSRecord',
             resource_name,
             __props__,
             opts)
@@ -186,9 +186,9 @@ class DnsRecord(pulumi.CustomResource):
     @staticmethod
     def get(resource_name: str,
             id: pulumi.Input[str],
-            opts: Optional[pulumi.ResourceOptions] = None) -> 'DnsRecord':
+            opts: Optional[pulumi.ResourceOptions] = None) -> 'DNSRecord':
         """
-        Get an existing DnsRecord resource's state with the given name, id, and optional extra
+        Get an existing DNSRecord resource's state with the given name, id, and optional extra
         properties used to qualify the lookup.
 
         :param str resource_name: The unique name of the resulting resource.
@@ -197,7 +197,7 @@ class DnsRecord(pulumi.CustomResource):
         """
         opts = pulumi.ResourceOptions.merge(opts, pulumi.ResourceOptions(id=id))
 
-        __props__ = DnsRecordArgs.__new__(DnsRecordArgs)
+        __props__ = DNSRecordArgs.__new__(DNSRecordArgs)
 
         __props__.__dict__["domain"] = None
         __props__.__dict__["fqdn"] = None
@@ -206,7 +206,7 @@ class DnsRecord(pulumi.CustomResource):
         __props__.__dict__["record_id"] = None
         __props__.__dict__["type"] = None
         __props__.__dict__["value"] = None
-        return DnsRecord(resource_name, opts=opts, __props__=__props__)
+        return DNSRecord(resource_name, opts=opts, __props__=__props__)
 
     @property
     @pulumi.getter

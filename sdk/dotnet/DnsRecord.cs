@@ -13,8 +13,8 @@ namespace Netcup.Netcup
     /// <summary>
     /// A DNS record managed by Netcup DNS service
     /// </summary>
-    [NetcupResourceType("netcup:index:DnsRecord")]
-    public partial class DnsRecord : global::Pulumi.CustomResource
+    [NetcupResourceType("netcup:index:DNSRecord")]
+    public partial class DNSRecord : global::Pulumi.CustomResource
     {
         /// <summary>
         /// The domain name for the DNS record
@@ -60,19 +60,19 @@ namespace Netcup.Netcup
 
 
         /// <summary>
-        /// Create a DnsRecord resource with the given unique name, arguments, and options.
+        /// Create a DNSRecord resource with the given unique name, arguments, and options.
         /// </summary>
         ///
         /// <param name="name">The unique name of the resource</param>
         /// <param name="args">The arguments used to populate this resource's properties</param>
         /// <param name="options">A bag of options that control this resource's behavior</param>
-        public DnsRecord(string name, DnsRecordArgs args, CustomResourceOptions? options = null)
-            : base("netcup:index:DnsRecord", name, args ?? new DnsRecordArgs(), MakeResourceOptions(options, ""))
+        public DNSRecord(string name, DNSRecordArgs args, CustomResourceOptions? options = null)
+            : base("netcup:index:DNSRecord", name, args ?? new DNSRecordArgs(), MakeResourceOptions(options, ""))
         {
         }
 
-        private DnsRecord(string name, Input<string> id, CustomResourceOptions? options = null)
-            : base("netcup:index:DnsRecord", name, null, MakeResourceOptions(options, id))
+        private DNSRecord(string name, Input<string> id, CustomResourceOptions? options = null)
+            : base("netcup:index:DNSRecord", name, null, MakeResourceOptions(options, id))
         {
         }
 
@@ -88,20 +88,20 @@ namespace Netcup.Netcup
             return merged;
         }
         /// <summary>
-        /// Get an existing DnsRecord resource's state with the given name, ID, and optional extra
+        /// Get an existing DNSRecord resource's state with the given name, ID, and optional extra
         /// properties used to qualify the lookup.
         /// </summary>
         ///
         /// <param name="name">The unique name of the resulting resource.</param>
         /// <param name="id">The unique provider ID of the resource to lookup.</param>
         /// <param name="options">A bag of options that control this resource's behavior</param>
-        public static DnsRecord Get(string name, Input<string> id, CustomResourceOptions? options = null)
+        public static DNSRecord Get(string name, Input<string> id, CustomResourceOptions? options = null)
         {
-            return new DnsRecord(name, id, options);
+            return new DNSRecord(name, id, options);
         }
     }
 
-    public sealed class DnsRecordArgs : global::Pulumi.ResourceArgs
+    public sealed class DNSRecordArgs : global::Pulumi.ResourceArgs
     {
         /// <summary>
         /// The domain name for the DNS record (e.g., 'example.com')
@@ -133,9 +133,9 @@ namespace Netcup.Netcup
         [Input("value", required: true)]
         public Input<string> Value { get; set; } = null!;
 
-        public DnsRecordArgs()
+        public DNSRecordArgs()
         {
         }
-        public static new DnsRecordArgs Empty => new DnsRecordArgs();
+        public static new DNSRecordArgs Empty => new DNSRecordArgs();
     }
 }

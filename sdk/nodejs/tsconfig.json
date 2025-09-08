@@ -15,7 +15,7 @@
     "files": [
         "config/index.ts",
         "config/vars.ts",
-        "dnsRecord.ts",
+        "dnsrecord.ts",
         "index.ts",
         "provider.ts",
         "utilities.ts"

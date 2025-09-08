@@ -24,7 +24,7 @@ _utilities.register(
   "mod": "index",
   "fqn": "netcup_netcup",
   "classes": {
-   "netcup:index:DnsRecord": "DnsRecord"
+   "netcup:index:DNSRecord": "DNSRecord"
   }
  }
 ]

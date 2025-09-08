@@ -5,10 +5,10 @@ import * as pulumi from "@pulumi/pulumi";
 import * as utilities from "./utilities";
 
 // Export members:
-export { DnsRecordArgs } from "./dnsRecord";
-export type DnsRecord = import("./dnsRecord").DnsRecord;
-export const DnsRecord: typeof import("./dnsRecord").DnsRecord = null as any;
-utilities.lazyLoad(exports, ["DnsRecord"], () => require("./dnsRecord"));
+export { DNSRecordArgs } from "./dnsrecord";
+export type DNSRecord = import("./dnsrecord").DNSRecord;
+export const DNSRecord: typeof import("./dnsrecord").DNSRecord = null as any;
+utilities.lazyLoad(exports, ["DNSRecord"], () => require("./dnsrecord"));
 
 export { ProviderArgs } from "./provider";
 export type Provider = import("./provider").Provider;
@@ -27,8 +27,8 @@ const _module = {
     version: utilities.getVersion(),
     construct: (name: string, type: string, urn: string): pulumi.Resource => {
         switch (type) {
-            case "netcup:index:DnsRecord":
-                return new DnsRecord(name, <any>undefined, { urn })
+            case "netcup:index:DNSRecord":
+                return new DNSRecord(name, <any>undefined, { urn })
             default:
                 throw new Error(`unknown resource type ${type}`);
         }

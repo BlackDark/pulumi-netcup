@@ -12,9 +12,9 @@ import java.util.Optional;
 import javax.annotation.Nullable;
 
 
-public final class DnsRecordArgs extends com.pulumi.resources.ResourceArgs {
+public final class DNSRecordArgs extends com.pulumi.resources.ResourceArgs {
 
-    public static final DnsRecordArgs Empty = new DnsRecordArgs();
+    public static final DNSRecordArgs Empty = new DNSRecordArgs();
 
     /**
      * The domain name for the DNS record (e.g., &#39;example.com&#39;)
@@ -91,9 +91,9 @@ public final class DnsRecordArgs extends com.pulumi.resources.ResourceArgs {
         return this.value;
     }
 
-    private DnsRecordArgs() {}
+    private DNSRecordArgs() {}
 
-    private DnsRecordArgs(DnsRecordArgs $) {
+    private DNSRecordArgs(DNSRecordArgs $) {
         this.domain = $.domain;
         this.name = $.name;
         this.priority = $.priority;
@@ -104,19 +104,19 @@ public final class DnsRecordArgs extends com.pulumi.resources.ResourceArgs {
     public static Builder builder() {
         return new Builder();
     }
-    public static Builder builder(DnsRecordArgs defaults) {
+    public static Builder builder(DNSRecordArgs defaults) {
         return new Builder(defaults);
     }
 
     public static final class Builder {
-        private DnsRecordArgs $;
+        private DNSRecordArgs $;
 
         public Builder() {
-            $ = new DnsRecordArgs();
+            $ = new DNSRecordArgs();
         }
 
-        public Builder(DnsRecordArgs defaults) {
-            $ = new DnsRecordArgs(Objects.requireNonNull(defaults));
+        public Builder(DNSRecordArgs defaults) {
+            $ = new DNSRecordArgs(Objects.requireNonNull(defaults));
         }
 
         /**
@@ -224,18 +224,18 @@ public final class DnsRecordArgs extends com.pulumi.resources.ResourceArgs {
             return value(Output.of(value));
         }
 
-        public DnsRecordArgs build() {
+        public DNSRecordArgs build() {
             if ($.domain == null) {
-                throw new MissingRequiredPropertyException("DnsRecordArgs", "domain");
+                throw new MissingRequiredPropertyException("DNSRecordArgs", "domain");
             }
             if ($.name == null) {
-                throw new MissingRequiredPropertyException("DnsRecordArgs", "name");
+                throw new MissingRequiredPropertyException("DNSRecordArgs", "name");
             }
             if ($.type == null) {
-                throw new MissingRequiredPropertyException("DnsRecordArgs", "type");
+                throw new MissingRequiredPropertyException("DNSRecordArgs", "type");
             }
             if ($.value == null) {
-                throw new MissingRequiredPropertyException("DnsRecordArgs", "value");
+                throw new MissingRequiredPropertyException("DNSRecordArgs", "value");
             }
             return $;
         }
