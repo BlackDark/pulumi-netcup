@@ -1,4 +1,4 @@
-// Copyright 2025, Pulumi Corporation.
+// Copyright 2025, BlackDark.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import (
 )
 
 func TestNetcupClient_NewClient(t *testing.T) {
+	t.Parallel()
 	client := NewNetcupClient("test-key", "test-password", "test-customer")
 
 	assert.Equal(t, "test-key", client.apiKey)
@@ -36,6 +37,7 @@ func TestNetcupClient_NewClient(t *testing.T) {
 }
 
 func TestNetcupClient_Login_Success(t *testing.T) {
+	t.Parallel()
 	// Mock server that returns successful login response
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var req NetcupAPIRequest
@@ -53,7 +55,7 @@ func TestNetcupClient_Login_Success(t *testing.T) {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(response)
+		_ = json.NewEncoder(w).Encode(response)
 	}))
 	defer server.Close()
 
@@ -95,7 +97,9 @@ func TestNetcupClient_Login_Success(t *testing.T) {
 		if err != nil {
 			return nil, err
 		}
-		defer resp.Body.Close()
+		defer func() {
+			_ = resp.Body.Close()
+		}()
 
 		var apiResponse NetcupAPIResponse
 		if err := json.NewDecoder(resp.Body).Decode(&apiResponse); err != nil {
@@ -118,6 +122,7 @@ func TestNetcupClient_Login_Success(t *testing.T) {
 }
 
 func TestNetcupClient_Login_InvalidCredentials(t *testing.T) {
+	t.Parallel()
 	// Mock server that returns login failure
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		response := NetcupAPIResponse{
@@ -127,7 +132,7 @@ func TestNetcupClient_Login_InvalidCredentials(t *testing.T) {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(response)
+		_ = json.NewEncoder(w).Encode(response)
 	}))
 	defer server.Close()
 
@@ -147,14 +152,15 @@ func TestNetcupClient_Login_InvalidCredentials(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.expected, func(t *testing.T) {
+			t.Parallel()
 			// Test the error message logic
 			var errorMsg string
-			switch {
-			case tc.statusCode == 2011:
+			switch tc.statusCode {
+			case 2011:
 				errorMsg = "login failed: Invalid API credentials (API key or password incorrect)"
-			case tc.statusCode == 2029:
+			case 2029:
 				errorMsg = "login failed: Customer account not found (check customer ID)"
-			case tc.statusCode == 2057:
+			case 2057:
 				errorMsg = "login failed: Rate limit exceeded (more than 180 requests per minute). Please wait and retry later"
 			default:
 				errorMsg = "login failed: Unknown error (status code: 9999)"
@@ -166,6 +172,7 @@ func TestNetcupClient_Login_InvalidCredentials(t *testing.T) {
 }
 
 func TestNetcupClient_GetAllDnsRecords_ParseResponse(t *testing.T) {
+	t.Parallel()
 	// Test the parsing logic for DNS records response
 	mockResponseData := map[string]interface{}{
 		"dnsrecords": []interface{}{
@@ -200,7 +207,7 @@ func TestNetcupClient_GetAllDnsRecords_ParseResponse(t *testing.T) {
 	recordsData, ok := mockResponseData["dnsrecords"].([]interface{})
 	require.True(t, ok)
 
-	var records []*DnsRecordInfo
+	records := make([]*DNSRecordInfo, 0, len(recordsData))
 	for _, recordData := range recordsData {
 		recordMap, ok := recordData.(map[string]interface{})
 		require.True(t, ok)
@@ -210,7 +217,7 @@ func TestNetcupClient_GetAllDnsRecords_ParseResponse(t *testing.T) {
 		recordType, _ := recordMap["type"].(string)
 		destination, _ := recordMap["destination"].(string)
 
-		record := &DnsRecordInfo{
+		record := &DNSRecordInfo{
 			ID:          id,
 			Hostname:    hostname,
 			Type:        recordType,
@@ -253,6 +260,7 @@ func TestNetcupClient_GetAllDnsRecords_ParseResponse(t *testing.T) {
 }
 
 func TestNetcupClient_ErrorHandling(t *testing.T) {
+	t.Parallel()
 	// Test error code handling logic
 	testCases := []struct {
 		statusCode int
@@ -266,14 +274,15 @@ func TestNetcupClient_ErrorHandling(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.expected, func(t *testing.T) {
+			t.Parallel()
 			// Test the error message logic that would be used in various methods
 			var errorMsg string
-			switch {
-			case tc.statusCode == 4013:
+			switch tc.statusCode {
+			case 4013:
 				errorMsg = "The DNS records are not in valid format. Check record type, hostname format, and destination value"
-			case tc.statusCode == 2016:
+			case 2016:
 				errorMsg = "Domain not found or not accessible with current credentials"
-			case tc.statusCode == 2057:
+			case 2057:
 				errorMsg = "Rate limit exceeded. Please wait and retry later"
 			}
 
@@ -283,8 +292,9 @@ func TestNetcupClient_ErrorHandling(t *testing.T) {
 }
 
 func TestNetcupClient_UpdateRecordLogic(t *testing.T) {
+	t.Parallel()
 	// Test the update logic for modifying a record in a list
-	existingRecords := []*DnsRecordInfo{
+	existingRecords := []*DNSRecordInfo{
 		{
 			ID:          "123456",
 			Hostname:    "@",
@@ -309,18 +319,19 @@ func TestNetcupClient_UpdateRecordLogic(t *testing.T) {
 	// Find and update the target record (logic from UpdateDnsRecord)
 	found := false
 	for _, record := range existingRecords {
-		if record.ID == recordID {
-			record.Hostname = newName
-			record.Type = newType
-			record.Destination = newValue
-			if newPriority != "" {
-				record.Priority = newPriority
-			} else {
-				record.Priority = ""
-			}
-			found = true
-			break
+		if record.ID != recordID {
+			continue
 		}
+		record.Hostname = newName
+		record.Type = newType
+		record.Destination = newValue
+		if newPriority != "" {
+			record.Priority = newPriority
+		} else {
+			record.Priority = ""
+		}
+		found = true
+		break
 	}
 
 	assert.True(t, found)
@@ -335,8 +346,9 @@ func TestNetcupClient_UpdateRecordLogic(t *testing.T) {
 }
 
 func TestNetcupClient_DeleteRecordLogic(t *testing.T) {
+	t.Parallel()
 	// Test the delete logic for removing a record from a list
-	existingRecords := []*DnsRecordInfo{
+	existingRecords := []*DNSRecordInfo{
 		{
 			ID:          "123456",
 			Hostname:    "@",
@@ -354,7 +366,7 @@ func TestNetcupClient_DeleteRecordLogic(t *testing.T) {
 	recordID := "123456"
 
 	// Filter out the record to delete (logic from DeleteDnsRecord)
-	var filteredRecords []*DnsRecordInfo
+	var filteredRecords []*DNSRecordInfo
 	found := false
 	for _, record := range existingRecords {
 		if record.ID != recordID {

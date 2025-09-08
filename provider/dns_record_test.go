@@ -1,4 +1,4 @@
-// Copyright 2025, Pulumi Corporation.
+// Copyright 2025, BlackDark.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -27,15 +27,16 @@ import (
 )
 
 func TestDnsRecordValidation(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		name        string
-		args        DnsRecordArgs
+		args        DNSRecordArgs
 		expectError bool
 		errorMsg    string
 	}{
 		{
 			name: "valid A record",
-			args: DnsRecordArgs{
+			args: DNSRecordArgs{
 				Domain: "example.com",
 				Name:   "test",
 				Type:   "A",
@@ -45,7 +46,7 @@ func TestDnsRecordValidation(t *testing.T) {
 		},
 		{
 			name: "valid MX record with priority",
-			args: DnsRecordArgs{
+			args: DNSRecordArgs{
 				Domain:   "example.com",
 				Name:     "@",
 				Type:     "MX",
@@ -56,7 +57,7 @@ func TestDnsRecordValidation(t *testing.T) {
 		},
 		{
 			name: "invalid MX record without priority",
-			args: DnsRecordArgs{
+			args: DNSRecordArgs{
 				Domain: "example.com",
 				Name:   "@",
 				Type:   "MX",
@@ -67,7 +68,7 @@ func TestDnsRecordValidation(t *testing.T) {
 		},
 		{
 			name: "invalid CNAME for root domain",
-			args: DnsRecordArgs{
+			args: DNSRecordArgs{
 				Domain: "example.com",
 				Name:   "@",
 				Type:   "CNAME",
@@ -78,7 +79,7 @@ func TestDnsRecordValidation(t *testing.T) {
 		},
 		{
 			name: "invalid record type",
-			args: DnsRecordArgs{
+			args: DNSRecordArgs{
 				Domain: "example.com",
 				Name:   "test",
 				Type:   "INVALID",
@@ -89,7 +90,7 @@ func TestDnsRecordValidation(t *testing.T) {
 		},
 		{
 			name: "missing domain",
-			args: DnsRecordArgs{
+			args: DNSRecordArgs{
 				Name:  "test",
 				Type:  "A",
 				Value: "1.2.3.4",
@@ -99,7 +100,7 @@ func TestDnsRecordValidation(t *testing.T) {
 		},
 		{
 			name: "missing name",
-			args: DnsRecordArgs{
+			args: DNSRecordArgs{
 				Domain: "example.com",
 				Type:   "A",
 				Value:  "1.2.3.4",
@@ -109,7 +110,7 @@ func TestDnsRecordValidation(t *testing.T) {
 		},
 		{
 			name: "missing value",
-			args: DnsRecordArgs{
+			args: DNSRecordArgs{
 				Domain: "example.com",
 				Name:   "test",
 				Type:   "A",
@@ -121,7 +122,8 @@ func TestDnsRecordValidation(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := validateDnsRecord(tt.args)
+			t.Parallel()
+			err := validateDNSRecord(tt.args)
 			if tt.expectError {
 				require.Error(t, err)
 				assert.ErrorContains(t, err, tt.errorMsg)
@@ -133,6 +135,7 @@ func TestDnsRecordValidation(t *testing.T) {
 }
 
 func TestBuildFQDN(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		name     string
 		hostname string
@@ -167,6 +170,7 @@ func TestBuildFQDN(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			result := buildFQDN(tt.hostname, tt.domain)
 			assert.Equal(t, tt.expected, result)
 		})
@@ -176,6 +180,7 @@ func TestBuildFQDN(t *testing.T) {
 // TestDnsRecordLifecycle tests the complete CRUD lifecycle for DNS records
 // Note: This test requires valid Netcup credentials and will be skipped in CI
 func TestDnsRecordLifecycle(t *testing.T) {
+	t.Parallel()
 	t.Skip("Integration test requiring valid Netcup credentials - enable manually for testing")
 
 	server, err := integration.NewServer(t.Context(),
@@ -236,6 +241,7 @@ func TestDnsRecordLifecycle(t *testing.T) {
 
 // TestDnsRecordMXWithPriority tests MX record creation with priority
 func TestDnsRecordMXWithPriority(t *testing.T) {
+	t.Parallel()
 	t.Skip("Integration test requiring valid Netcup credentials - enable manually for testing")
 
 	server, err := integration.NewServer(t.Context(),
@@ -244,12 +250,6 @@ func TestDnsRecordMXWithPriority(t *testing.T) {
 		integration.WithProvider(Provider()),
 	)
 	require.NoError(t, err)
-
-	// config := map[string]interface{}{
-	//	"apiKey":     "test-api-key",
-	//	"apiPassword": "test-api-password",
-	//	"customerId": "test-customer-id",
-	// }
 
 	integration.LifeCycleTest{
 		Resource: "netcup:index:DnsRecord",

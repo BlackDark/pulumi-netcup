@@ -1,4 +1,4 @@
-// Copyright 2025, Pulumi Corporation.
+// Copyright 2025, BlackDark.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package provider implements a simple random resource and component.
+// Package provider implements a Pulumi provider for managing Netcup DNS records.
 package provider
 
 import (
@@ -38,7 +38,7 @@ func Provider() p.Provider {
 		WithNamespace("netcup").
 		WithGoImportPath("github.com/blackdark/pulumi-netcup/sdk/go/pulumi-netcup").
 		WithResources(
-			infer.Resource(&DnsRecord{}),
+			infer.Resource(&DNSRecord{}),
 		).
 		WithConfig(infer.Config(&Config{})).
 		WithModuleMap(map[tokens.ModuleName]tokens.ModuleName{
@@ -53,14 +53,14 @@ func Provider() p.Provider {
 // Config defines provider-level configuration
 type Config struct {
 	// Netcup API credentials
-	ApiKey      string `pulumi:"apiKey" provider:"secret"`
-	ApiPassword string `pulumi:"apiPassword" provider:"secret"`
+	APIKey      string `pulumi:"apiKey"      provider:"secret"`
+	APIPassword string `pulumi:"apiPassword" provider:"secret"`
 	CustomerID  string `pulumi:"customerId"`
 }
 
 // Annotate provides metadata about the Config
 func (c *Config) Annotate(a infer.Annotator) {
-	a.Describe(&c.ApiKey, "The Netcup API key for authentication")
-	a.Describe(&c.ApiPassword, "The Netcup API password for authentication")
+	a.Describe(&c.APIKey, "The Netcup API key for authentication")
+	a.Describe(&c.APIPassword, "The Netcup API password for authentication")
 	a.Describe(&c.CustomerID, "The Netcup customer ID")
 }

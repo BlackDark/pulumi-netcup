@@ -1,4 +1,4 @@
-// Copyright 2025, Pulumi Corporation.
+// Copyright 2025, BlackDark.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,15 +23,16 @@ import (
 	"github.com/pulumi/pulumi-go-provider/infer"
 )
 
-// DnsRecord represents a DNS record resource in Netcup
-type DnsRecord struct{}
+// DNSRecord represents a DNS record managed by Netcup DNS service.
+type DNSRecord struct{}
 
-// Annotate provides metadata about the DnsRecord resource
-func (r *DnsRecord) Annotate(a infer.Annotator) {
+// Annotate provides metadata about the DNSRecord resource.
+func (r *DNSRecord) Annotate(a infer.Annotator) {
 	a.Describe(&r, "A DNS record managed by Netcup DNS service")
 }
 
-type DnsRecordArgs struct {
+// DNSRecordArgs contains the input arguments for a DNS record resource.
+type DNSRecordArgs struct {
 	Domain   string  `pulumi:"domain"`
 	Name     string  `pulumi:"name"`
 	Type     string  `pulumi:"type"`
@@ -39,23 +40,33 @@ type DnsRecordArgs struct {
 	Priority *string `pulumi:"priority,optional"`
 }
 
-// Annotate provides metadata about the DnsRecordArgs
-func (args *DnsRecordArgs) Annotate(a infer.Annotator) {
+// Annotate provides metadata about the DNSRecordArgs.
+func (args *DNSRecordArgs) Annotate(a infer.Annotator) {
 	a.Describe(&args.Domain, "The domain name for the DNS record (e.g., 'example.com')")
-	a.Describe(&args.Name, "The hostname for the DNS record. Use '@' for root domain, or specify subdomain (e.g., 'www', 'mail')")
-	a.Describe(&args.Type, "The DNS record type. Supported types: A, AAAA, CNAME, MX, TXT, SRV, CAA, TLSA, NS, DS, OPENPGPKEY, SMIMEA, SSHFP")
-	a.Describe(&args.Value, "The value/destination for the DNS record (e.g., IP address for A records, hostname for CNAME)")
+	a.Describe(
+		&args.Name,
+		"The hostname for the DNS record. Use '@' for root domain, or specify subdomain (e.g., 'www', 'mail')",
+	)
+	a.Describe(
+		&args.Type,
+		"The DNS record type. Supported types: A, AAAA, CNAME, MX, TXT, SRV, CAA, TLSA, NS, DS, OPENPGPKEY, SMIMEA, SSHFP",
+	)
+	a.Describe(
+		&args.Value,
+		"The value/destination for the DNS record (e.g., IP address for A records, hostname for CNAME)",
+	)
 	a.Describe(&args.Priority, "The priority for MX and SRV records (required for these types, ignored for others)")
 }
 
-type DnsRecordState struct {
-	DnsRecordArgs
+// DNSRecordState contains the state of a DNS record resource.
+type DNSRecordState struct {
+	DNSRecordArgs
 	RecordID string `pulumi:"recordId"`
 	FQDN     string `pulumi:"fqdn"`
 }
 
-// Annotate provides metadata about the DnsRecordState
-func (state *DnsRecordState) Annotate(a infer.Annotator) {
+// Annotate provides metadata about the DNSRecordState.
+func (state *DNSRecordState) Annotate(a infer.Annotator) {
 	a.Describe(&state.Domain, "The domain name for the DNS record")
 	a.Describe(&state.Name, "The hostname for the DNS record")
 	a.Describe(&state.Type, "The DNS record type")
@@ -65,77 +76,79 @@ func (state *DnsRecordState) Annotate(a infer.Annotator) {
 	a.Describe(&state.FQDN, "The fully qualified domain name")
 }
 
-func (r *DnsRecord) Create(
+// Create creates a new DNS record resource in Netcup.
+func (r *DNSRecord) Create(
 	ctx context.Context,
-	req infer.CreateRequest[DnsRecordArgs],
-) (infer.CreateResponse[DnsRecordState], error) {
+	req infer.CreateRequest[DNSRecordArgs],
+) (infer.CreateResponse[DNSRecordState], error) {
 	input := req.Inputs
 
 	if req.DryRun {
 		// Generate a temporary composite ID for preview
 		tempID := createCompositeID(input.Domain, "preview-id")
-		state := DnsRecordState{
-			DnsRecordArgs: input,
+		state := DNSRecordState{
+			DNSRecordArgs: input,
 			RecordID:      "preview-id",
 			FQDN:          buildFQDN(input.Name, input.Domain),
 		}
-		return infer.CreateResponse[DnsRecordState]{ID: tempID, Output: state}, nil
+		return infer.CreateResponse[DNSRecordState]{ID: tempID, Output: state}, nil
 	}
 
 	// Additional validation (should have been caught in Check, but double-check)
-	if failures := validateDnsRecordWithFailures(input); len(failures) > 0 {
-		return infer.CreateResponse[DnsRecordState]{},
+	if failures := validateDNSRecordWithFailures(input); len(failures) > 0 {
+		return infer.CreateResponse[DNSRecordState]{},
 			fmt.Errorf("validation failed: %v", failures)
 	}
 
 	config := infer.GetConfig[Config](ctx)
-	client := NewNetcupClient(config.ApiKey, config.ApiPassword, config.CustomerID)
+	client := NewNetcupClient(config.APIKey, config.APIPassword, config.CustomerID)
 
 	var priority string
 	if input.Priority != nil {
 		priority = *input.Priority
 	}
 
-	recordID, err := client.CreateDnsRecord(input.Domain, input.Name, input.Type, input.Value, priority)
+	recordID, err := client.CreateDNSRecord(input.Domain, input.Name, input.Type, input.Value, priority)
 	if err != nil {
-		return infer.CreateResponse[DnsRecordState]{}, fmt.Errorf("failed to create DNS record: %w", err)
+		return infer.CreateResponse[DNSRecordState]{}, fmt.Errorf("failed to create DNS record: %w", err)
 	}
 
 	// Create composite ID for the resource
 	compositeID := createCompositeID(input.Domain, recordID)
 
-	state := DnsRecordState{
-		DnsRecordArgs: input,
+	state := DNSRecordState{
+		DNSRecordArgs: input,
 		RecordID:      recordID,
 		FQDN:          buildFQDN(input.Name, input.Domain),
 	}
 
-	return infer.CreateResponse[DnsRecordState]{ID: compositeID, Output: state}, nil
+	return infer.CreateResponse[DNSRecordState]{ID: compositeID, Output: state}, nil
 }
 
-func (r *DnsRecord) Read(
+func (r *DNSRecord) Read(
+	// Read reads the current state of a DNS record resource in Netcup.
 	ctx context.Context,
-	req infer.ReadRequest[DnsRecordArgs, DnsRecordState],
-) (infer.ReadResponse[DnsRecordArgs, DnsRecordState], error) {
+	req infer.ReadRequest[DNSRecordArgs, DNSRecordState],
+) (infer.ReadResponse[DNSRecordArgs, DNSRecordState], error) {
 	// Parse the composite ID to get domain and record ID
 	domain, recordID, err := parseCompositeID(req.ID)
 	if err != nil {
-		return infer.ReadResponse[DnsRecordArgs, DnsRecordState]{},
+		return infer.ReadResponse[DNSRecordArgs, DNSRecordState]{},
 			fmt.Errorf("invalid resource ID format: %w", err)
 	}
 
 	config := infer.GetConfig[Config](ctx)
-	client := NewNetcupClient(config.ApiKey, config.ApiPassword, config.CustomerID)
+	client := NewNetcupClient(config.APIKey, config.APIPassword, config.CustomerID)
 
-	currentRecord, err := client.GetDnsRecordById(recordID, domain)
+	currentRecord, err := client.GetDNSRecordByID(recordID, domain)
 	if err != nil {
 		// Check if this is a "not found" error specifically
 		if isNotFoundError(err) {
 			// Return empty response to indicate resource should be recreated
-			return infer.ReadResponse[DnsRecordArgs, DnsRecordState]{}, nil
+			return infer.ReadResponse[DNSRecordArgs, DNSRecordState]{}, nil
 		}
 		// For other errors, return the error to indicate a real problem
-		return infer.ReadResponse[DnsRecordArgs, DnsRecordState]{},
+		return infer.ReadResponse[DNSRecordArgs, DNSRecordState]{},
 			fmt.Errorf("failed to read DNS record %s: %w", recordID, err)
 	}
 
@@ -146,7 +159,7 @@ func (r *DnsRecord) Read(
 	}
 
 	// Create inputs and state from current record data
-	inputs := DnsRecordArgs{
+	inputs := DNSRecordArgs{
 		Domain:   domain,
 		Name:     currentRecord.Hostname,
 		Type:     currentRecord.Type,
@@ -154,54 +167,48 @@ func (r *DnsRecord) Read(
 		Priority: priority,
 	}
 
-	state := DnsRecordState{
-		DnsRecordArgs: inputs,
+	state := DNSRecordState{
+		DNSRecordArgs: inputs,
 		RecordID:      recordID,
 		FQDN:          buildFQDN(currentRecord.Hostname, domain),
 	}
 
-	return infer.ReadResponse[DnsRecordArgs, DnsRecordState]{
+	return infer.ReadResponse[DNSRecordArgs, DNSRecordState]{
 		ID:     req.ID, // Return the same composite ID
 		Inputs: inputs,
 		State:  state,
 	}, nil
 }
 
-func (r *DnsRecord) Update(
+// Update updates an existing DNS record resource in Netcup.
+func (r *DNSRecord) Update(
 	ctx context.Context,
-	req infer.UpdateRequest[DnsRecordArgs, DnsRecordState],
-) (infer.UpdateResponse[DnsRecordState], error) {
-	if req.DryRun {
-		// For dry runs, return the expected new state
-		newState := DnsRecordState{
-			DnsRecordArgs: req.Inputs,
-			RecordID:      req.State.RecordID,
-			FQDN:          buildFQDN(req.Inputs.Name, req.Inputs.Domain),
-		}
-		return infer.UpdateResponse[DnsRecordState]{Output: newState}, nil
-	}
-
+	req infer.UpdateRequest[DNSRecordArgs, DNSRecordState],
+) (
+	infer.UpdateResponse[DNSRecordState],
+	error,
+) {
 	inputs := req.Inputs
 
 	// Validate inputs (should have been caught in Check, but double-check)
-	if failures := validateDnsRecordWithFailures(inputs); len(failures) > 0 {
-		return infer.UpdateResponse[DnsRecordState]{},
+	if failures := validateDNSRecordWithFailures(inputs); len(failures) > 0 {
+		return infer.UpdateResponse[DNSRecordState]{},
 			fmt.Errorf("validation failed: %v", failures)
 	}
 
 	// Parse the composite ID to get domain and record ID
 	domain, recordID, err := parseCompositeID(req.ID)
 	if err != nil {
-		return infer.UpdateResponse[DnsRecordState]{}, fmt.Errorf("invalid resource ID: %w", err)
+		return infer.UpdateResponse[DNSRecordState]{}, fmt.Errorf("invalid resource ID: %w", err)
 	}
-
 	config := infer.GetConfig[Config](ctx)
-	client := NewNetcupClient(config.ApiKey, config.ApiPassword, config.CustomerID)
+	client := NewNetcupClient(config.APIKey, config.APIPassword, config.CustomerID)
 
 	// Verify the record exists before updating
-	_, err = client.GetDnsRecordById(recordID, domain)
+	_, err = client.GetDNSRecordByID(recordID, domain)
 	if err != nil {
-		return infer.UpdateResponse[DnsRecordState]{}, fmt.Errorf("failed to find existing DNS record for update: %w", err)
+		return infer.UpdateResponse[DNSRecordState]{},
+			fmt.Errorf("failed to find existing DNS record for update: %w", err)
 	}
 
 	var priority string
@@ -209,24 +216,27 @@ func (r *DnsRecord) Update(
 		priority = *inputs.Priority
 	}
 
-	err = client.UpdateDnsRecord(recordID, domain, inputs.Name, inputs.Type, inputs.Value, priority)
+	err = client.UpdateDNSRecord(recordID, domain, inputs.Name, inputs.Type, inputs.Value, priority)
 	if err != nil {
-		return infer.UpdateResponse[DnsRecordState]{}, fmt.Errorf("failed to update DNS record: %w", err)
+		return infer.UpdateResponse[DNSRecordState]{}, fmt.Errorf("failed to update DNS record: %w", err)
 	}
-
-	newState := DnsRecordState{
-		DnsRecordArgs: inputs,
+	newState := DNSRecordState{
+		DNSRecordArgs: inputs,
 		RecordID:      recordID,
 		FQDN:          buildFQDN(inputs.Name, inputs.Domain),
 	}
 
-	return infer.UpdateResponse[DnsRecordState]{Output: newState}, nil
+	return infer.UpdateResponse[DNSRecordState]{Output: newState}, nil
 }
 
-func (r *DnsRecord) Diff(
+// Diff computes the differences between the desired and current state of a DNS record resource.
+func (r *DNSRecord) Diff(
 	ctx context.Context,
-	req infer.DiffRequest[DnsRecordArgs, DnsRecordState],
-) (infer.DiffResponse, error) {
+	req infer.DiffRequest[DNSRecordArgs, DNSRecordState],
+) (
+	infer.DiffResponse,
+	error,
+) {
 	hasChanges := false
 	deleteBeforeReplace := false
 	detailedDiff := make(map[string]p.PropertyDiff)
@@ -293,10 +303,8 @@ func (r *DnsRecord) Diff(
 	}, nil
 }
 
-func (r *DnsRecord) Delete(
-	ctx context.Context,
-	req infer.DeleteRequest[DnsRecordState],
-) (infer.DeleteResponse, error) {
+// Delete deletes a DNS record resource in Netcup.
+func (r *DNSRecord) Delete(ctx context.Context, req infer.DeleteRequest[DNSRecordState]) (infer.DeleteResponse, error) {
 	// Parse the composite ID to get domain and record ID
 	domain, recordID, err := parseCompositeID(req.ID)
 	if err != nil {
@@ -304,9 +312,9 @@ func (r *DnsRecord) Delete(
 	}
 
 	config := infer.GetConfig[Config](ctx)
-	client := NewNetcupClient(config.ApiKey, config.ApiPassword, config.CustomerID)
+	client := NewNetcupClient(config.APIKey, config.APIPassword, config.CustomerID)
 
-	err = client.DeleteDnsRecord(recordID, domain)
+	err = client.DeleteDNSRecord(recordID, domain)
 	if err != nil {
 		return infer.DeleteResponse{}, fmt.Errorf("failed to delete DNS record %s: %w", recordID, err)
 	}
@@ -314,12 +322,12 @@ func (r *DnsRecord) Delete(
 	return infer.DeleteResponse{}, nil
 }
 
-// Check validates and normalizes the resource inputs
-func (r *DnsRecord) Check(ctx context.Context, req infer.CheckRequest) (infer.CheckResponse[DnsRecordArgs], error) {
+// Check validates and normalizes the resource inputs.
+func (r *DNSRecord) Check(ctx context.Context, req infer.CheckRequest) (infer.CheckResponse[DNSRecordArgs], error) {
 	// Use default check for standard validation and type conversion
-	args, failures, err := infer.DefaultCheck[DnsRecordArgs](ctx, req.NewInputs)
+	args, failures, err := infer.DefaultCheck[DNSRecordArgs](ctx, req.NewInputs)
 	if err != nil {
-		return infer.CheckResponse[DnsRecordArgs]{
+		return infer.CheckResponse[DNSRecordArgs]{
 			Inputs:   args,
 			Failures: failures,
 		}, err
@@ -329,17 +337,17 @@ func (r *DnsRecord) Check(ctx context.Context, req infer.CheckRequest) (infer.Ch
 	args = normalizeInputs(args)
 
 	// Add custom validation failures
-	additionalFailures := validateDnsRecordWithFailures(args)
+	additionalFailures := validateDNSRecordWithFailures(args)
 	failures = append(failures, additionalFailures...)
 
-	return infer.CheckResponse[DnsRecordArgs]{
+	return infer.CheckResponse[DNSRecordArgs]{
 		Inputs:   args,
 		Failures: failures,
 	}, nil
 }
 
-// WireDependencies defines the dependency relationships between inputs and outputs
-func (r *DnsRecord) WireDependencies(f infer.FieldSelector, args *DnsRecordArgs, state *DnsRecordState) {
+// WireDependencies defines the dependency relationships between inputs and outputs.
+func (r *DNSRecord) WireDependencies(f infer.FieldSelector, args *DNSRecordArgs, state *DNSRecordState) {
 	f.OutputField(&state.Domain).DependsOn(f.InputField(&args.Domain))
 	f.OutputField(&state.Name).DependsOn(f.InputField(&args.Name))
 	f.OutputField(&state.Type).DependsOn(f.InputField(&args.Type))
@@ -349,7 +357,7 @@ func (r *DnsRecord) WireDependencies(f infer.FieldSelector, args *DnsRecordArgs,
 }
 
 // normalizeInputs normalizes and cleans up input values
-func normalizeInputs(args DnsRecordArgs) DnsRecordArgs {
+func normalizeInputs(args DNSRecordArgs) DNSRecordArgs {
 	// Normalize DNS record type to uppercase
 	args.Type = strings.ToUpper(strings.TrimSpace(args.Type))
 
@@ -372,7 +380,7 @@ func normalizeInputs(args DnsRecordArgs) DnsRecordArgs {
 }
 
 // validateDnsRecordWithFailures performs validation and returns field-specific failures
-func validateDnsRecordWithFailures(args DnsRecordArgs) []p.CheckFailure {
+func validateDNSRecordWithFailures(args DNSRecordArgs) []p.CheckFailure {
 	var failures []p.CheckFailure
 
 	validTypes := getValidTypesMap()
@@ -380,7 +388,11 @@ func validateDnsRecordWithFailures(args DnsRecordArgs) []p.CheckFailure {
 	if !validTypes[strings.ToUpper(args.Type)] {
 		failures = append(failures, p.CheckFailure{
 			Property: "type",
-			Reason:   fmt.Sprintf("Unsupported DNS record type: %s. Valid types are: %v", args.Type, getValidTypesList()),
+			Reason: fmt.Sprintf(
+				"Unsupported DNS record type: %s. Valid types are: %v",
+				args.Type,
+				getValidTypesList(),
+			),
 		})
 	}
 
@@ -433,8 +445,8 @@ func validateDnsRecordWithFailures(args DnsRecordArgs) []p.CheckFailure {
 }
 
 // Legacy validation function for backward compatibility
-func validateDnsRecord(args DnsRecordArgs) error {
-	failures := validateDnsRecordWithFailures(args)
+func validateDNSRecord(args DNSRecordArgs) error {
+	failures := validateDNSRecordWithFailures(args)
 	if len(failures) > 0 {
 		var messages []string
 		for _, failure := range failures {
@@ -454,7 +466,21 @@ func getValidTypesMap() map[string]bool {
 }
 
 func getValidTypesList() []string {
-	return []string{"A", "AAAA", "MX", "CNAME", "CAA", "SRV", "TXT", "TLSA", "NS", "DS", "OPENPGPKEY", "SMIMEA", "SSHFP"}
+	return []string{
+		"A",
+		"AAAA",
+		"MX",
+		"CNAME",
+		"CAA",
+		"SRV",
+		"TXT",
+		"TLSA",
+		"NS",
+		"DS",
+		"OPENPGPKEY",
+		"SMIMEA",
+		"SSHFP",
+	}
 }
 
 func priorityChanged(inputPriority, statePriority *string, recordType string) bool {
@@ -545,7 +571,7 @@ func buildFQDN(name, domain string) string {
 	return fmt.Sprintf("%s.%s", name, domain)
 }
 
-// GetID returns the resource ID in a consistent format
-func (r *DnsRecord) GetID(state DnsRecordState) string {
+// GetID returns the resource ID in a consistent format.
+func (r *DNSRecord) GetID(state DNSRecordState) string {
 	return createCompositeID(state.Domain, state.RecordID)
 }

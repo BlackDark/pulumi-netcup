@@ -30,6 +30,20 @@ linters:
         - hugeParam
         - importShadow
     goheader:
+      template: |-
+        Copyright 2025, BlackDark.
+
+        Licensed under the Apache License, Version 2.0 (the "License");
+        you may not use this file except in compliance with the License.
+        You may obtain a copy of the License at
+
+            http://www.apache.org/licenses/LICENSE-2.0
+
+        Unless required by applicable law or agreed to in writing, software
+        distributed under the License is distributed on an "AS IS" BASIS,
+        WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+        See the License for the specific language governing permissions and
+        limitations under the License.
     govet:
       enable:
         - nilness
@@ -60,6 +74,9 @@ formatters:
   enable:
     - gci
     - gofumpt
+    - goimports    # Complements import management
+    - golines      # Addresses line length (works with your lll linter)
+    - gofmt        # Standard formatting baseline
   settings:
     gci:
       sections:
@@ -69,6 +86,18 @@ formatters:
         - prefix(github.com/pulumi/)
         - prefix(github.com/pulumi/pulumi-dockerbuild/)
       custom-order: true
+    gofumpt:
+      module-path: github.com/pulumi/pulumi-dockerbuild/
+      extra-rules: true
+    goimports:
+      local-prefixes:
+        - github.com/pulumi/
+        - github.com/pulumi/pulumi-dockerbuild/
+    golines:
+      max-len: 120
+      shorten-comments: true
+    gofmt:
+      simplify: true
   exclusions:
     generated: lax
     paths:
