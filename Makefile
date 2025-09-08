@@ -140,7 +140,7 @@ java_sdk:: sdk/java
 build:: provider build_sdks
 
 .PHONY: build_sdks
-build_sdks: dotnet_sdk go_sdk nodejs_sdk python_sdk java_sdk
+build_sdks: dotnet_sdk go_sdk nodejs_sdk python_sdk #java_sdk
 
 # Required for the codegen action that runs in pulumi/pulumi
 only_build:: build

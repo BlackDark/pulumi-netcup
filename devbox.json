@@ -2,12 +2,12 @@
   "packages": [
     "yarn@latest",
     "pulumictl@latest",
-    "go@1.21.",
-    "nodejs@20.",
+    "go@1.22.",
+    "nodejs@24.",
     "python3@3.11.8",
     "dotnet-sdk@8.0.",
     "gradle_7@7.6",
-    "curl@8",
+    "curl@latest",
     "golangci-lint@latest",
     "goreleaser@latest"
   ],
