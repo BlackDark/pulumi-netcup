@@ -1,0 +1,18 @@
+{
+  $schema: "https://docs.renovatebot.com/renovate-schema.json",
+  extends: [
+    "github>blackdark/renovate-base//default.json5",
+    "github>blackdark/renovate-base//go.json5",
+  ],
+  separateMultipleMajor: true,
+  postUpdateOptions: ["gomodTidy", "gomodUpdateImportPaths"],
+  packageRules: [
+    {
+      description: "Majors: one PR each, merged by hand",
+      groupName: null,
+      matchUpdateTypes: ["major"],
+      addLabels: ["major"],
+      automerge: false,
+    },
+  ],
+}
